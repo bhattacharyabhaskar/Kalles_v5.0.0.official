@@ -122,7 +122,7 @@
       ],
       "settings": {
         "product_list_fbt": [],
-        "sticky_atc": true,
+        "sticky_atc": false,
         "colors_by_section": false,
         "color_scheme": "",
         "background_opacity": 1,
