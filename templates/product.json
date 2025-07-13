@@ -72,51 +72,13 @@
                 "height": 30
               },
               "blocks": {}
-            },
-            "product_meta_hnDEjn": {
-              "type": "_product-meta",
-              "settings": {},
-              "blocks": {
-                "product_meta_sku_kXHJPJ": {
-                  "type": "_product-meta-sku",
-                  "settings": {},
-                  "blocks": {}
-                },
-                "product_meta_category_4Gq4HK": {
-                  "type": "_product-meta-category",
-                  "settings": {},
-                  "blocks": {}
-                },
-                "product_meta_tags_bePDzg": {
-                  "type": "_product-meta-tags",
-                  "settings": {},
-                  "blocks": {}
-                }
-              },
-              "block_order": [
-                "product_meta_sku_kXHJPJ",
-                "product_meta_category_4Gq4HK",
-                "product_meta_tags_bePDzg"
-              ]
-            },
-            "socials_XYJPwj": {
-              "type": "socials",
-              "settings": {
-                "socials_style": "simple",
-                "socials_size": "medium",
-                "bd_radius": 30,
-                "space_item": 30
-              },
-              "blocks": {}
             }
           },
           "block_order": [
             "product_title_ehRqkq",
             "product_price_9JizTC",
             "product_buy_button_aPmAbD",
-            "product_trust_badge_QALnxQ",
-            "product_meta_hnDEjn",
-            "socials_XYJPwj"
+            "product_trust_badge_QALnxQ"
           ]
         },
         "main-product-medias": {
