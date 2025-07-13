@@ -146,39 +146,12 @@ document.addEventListener("DOMContentLoaded", function () {
       });
 
       if (!addRes.ok) throw new Error("❌ Failed to add items");
-      
- console.log("🛒 Refreshing cart using cart.js...");
-
-try {
-  const cartData = await fetch('/cart.js').then(res => res.json());
-
-  // Update cart count manually
-  const countEls = document.querySelectorAll('[data-cart-count]');
-  countEls.forEach(el => {
-    el.textContent = cartData.item_count;
-    el.classList.remove('t4s-op-0'); // Make it visible if it's hidden
-  });
-
-  // Open the drawer
-  if (window.T4S && typeof T4S.openDrawer === 'function') {
-    console.log("🚪 Opening drawer via T4S.openDrawer()");
-    T4S.openDrawer('#t4s-mini_cart');
-  } else {
-    console.warn("⚠️ T4S.openDrawer function not available");
-  }
-
-  document.dispatchEvent(new CustomEvent('cart:refresh', { bubbles: true }));
-  console.log("✅ Cart refreshed");
-} catch (err) {
-  console.error("❌ Failed to refresh cart or open drawer", err);
-}
-
-      //const drawerTrigger = document.querySelector('[data-drawer-options*="#t4s-mini_cart"]');
-     // if (drawerTrigger) {
-       // drawerTrigger.click();
-     // } else if (window.T4S && typeof T4S.openDrawer === 'function') {
-      //  T4S.openDrawer('#t4s-mini_cart');
-     // }
+      if (window.wisminiCart && typeof window.wisminiCart.updateCart === 'function') {
+        console.log("🔁 Refreshing cart drawer using wisminiCart.updateCart()");
+        window.wisminiCart.updateCart(true); // true = open drawer after update
+      } else {
+        console.warn("⚠️ wisminiCart.updateCart not found");
+      }
 
       //const drawerTrigger = document.querySelector('[data-drawer-options*="cart"]');
       //if (drawerTrigger) drawerTrigger.click();
