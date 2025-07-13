@@ -15,14 +15,14 @@
         "slide_item_GJUjrM": {
           "type": "_slide-item",
           "settings": {
-            "image": "shopify://shop_images/slider-01.jpg",
-            "url": "",
+            "image": "shopify://shop_images/indyvogue-banner-1200X600_1_12e7a05a-1745-4ae2-bd0d-d8fbd8110572.jpg",
+            "url": "shopify://collections/buy-silk-mark-certified-saree",
             "banner_target": false,
             "color_scheme": "scheme-1",
-            "content_position": "center-start",
-            "alignment": "left",
-            "content_position_mb": "center-start",
-            "alignment_mb": "left",
+            "content_position": "end-center",
+            "alignment": "center",
+            "content_position_mb": "end-center",
+            "alignment_mb": "center",
             "background_content": false,
             "bg_opacity": 0,
             "box_square": false,
@@ -69,13 +69,13 @@
             "heading_MzV9Ty": {
               "type": "heading",
               "settings": {
-                "heading": "<h2>New Arrival Collection</h2>",
+                "heading": "<h2>Best Indian Sarees Online</h2>",
                 "hidden_br_mobile": false,
                 "hidden_on_mobile": false,
                 "line_height": "hdt-lh-1",
                 "font_weight": "normal",
                 "heading_size": "h1",
-                "text_color": "hdt-s-text",
+                "text_color": "hdt-text-primary",
                 "font_size_heading_lg": 50,
                 "font_size_heading": 24,
                 "letter_spacing_heading": 0
@@ -100,6 +100,7 @@
                 "open_in_new_tab": false,
                 "full_width": false,
                 "btn_style": "hdt-btn-hover-accent",
+                "size": "m",
                 "font_weight": "semibold",
                 "font_size_btn": 14,
                 "padding_btn": 30,
@@ -125,7 +126,6 @@
         "slide_item_GJUjrL": {
           "type": "_slide-item",
           "settings": {
-            "image": "shopify://shop_images/slide3.webp",
             "url": "",
             "banner_target": false,
             "color_scheme": "",
@@ -210,6 +210,7 @@
                 "open_in_new_tab": false,
                 "full_width": false,
                 "btn_style": "hdt-btn-hover-accent",
+                "size": "m",
                 "font_weight": "semibold",
                 "font_size_btn": 14,
                 "padding_btn": 30,
@@ -235,7 +236,6 @@
         "slide_item_GJUjrO": {
           "type": "_slide-item",
           "settings": {
-            "image": "shopify://shop_images/slide2.webp",
             "url": "",
             "banner_target": false,
             "color_scheme": "",
@@ -320,6 +320,7 @@
                 "open_in_new_tab": false,
                 "full_width": false,
                 "btn_style": "hdt-btn-hover-accent",
+                "size": "m",
                 "font_weight": "semibold",
                 "font_size_btn": 14,
                 "padding_btn": 30,
@@ -349,7 +350,7 @@
         "slide_item_GJUjrO"
       ],
       "settings": {
-        "image_height": "fixed",
+        "image_height": "adapt_image_first",
         "fixed_height": 700,
         "image_height_mb": "fixed",
         "fixed_height_mb": 400,
@@ -376,7 +377,7 @@
         "full_width": true,
         "padding_top": 0,
         "padding_bottom": 30,
-        "padding_rate": 75
+        "padding_rate": 0
       }
     },
     "collections_list_manual_eErqxt": {
@@ -386,7 +387,6 @@
           "type": "_collection_manual-item",
           "settings": {
             "collection": "accessories",
-            "image": "shopify://shop_images/1_2a9471ff-024d-40f7-a4b3-a15a058ff334_2022-03-24.jpg",
             "title": "Women",
             "collection_link": "",
             "column_width": "6",
@@ -402,7 +402,6 @@
           "type": "_collection_manual-item",
           "settings": {
             "collection": "accessories",
-            "image": "shopify://shop_images/2_2022-03-02.jpg",
             "title": "Accessories",
             "collection_link": "",
             "column_width": "3",
@@ -418,7 +417,6 @@
           "type": "_collection_manual-item",
           "settings": {
             "collection": "watch",
-            "image": "shopify://shop_images/4_f8612457-70c3-4a0f-b808-0f322a71741c_2022-03-02.jpg",
             "title": "Watches",
             "collection_link": "",
             "column_width": "3",
@@ -434,7 +432,6 @@
           "type": "_collection_manual-item",
           "settings": {
             "collection": "footwear",
-            "image": "shopify://shop_images/3_2022-03-02.jpg",
             "title": "Footwear",
             "collection_link": "",
             "column_width": "3",
@@ -674,7 +671,6 @@
               "static": true,
               "settings": {
                 "source": "image",
-                "image": "shopify://shop_images/5_2022-03-02.jpg",
                 "external_video_url": "https://www.youtube.com/watch?v=_9VUPq3SxOc"
               },
               "blocks": {}
@@ -756,7 +752,6 @@
               "static": true,
               "settings": {
                 "source": "image",
-                "image": "shopify://shop_images/6_2022-03-02_50f70a60-cd60-4f21-a6c5-9cac17242994.jpg",
                 "external_video_url": "https://www.youtube.com/watch?v=_9VUPq3SxOc"
               },
               "blocks": {}
@@ -1005,7 +1000,6 @@
         "lookbook_LWng87": {
           "type": "_lookbook",
           "settings": {
-            "image": "shopify://shop_images/ins8_2022-03-02.jpg",
             "img_effect": "zoom",
             "b_effect": "none"
           },
@@ -1037,7 +1031,6 @@
         "lookbook_mYkjki": {
           "type": "_lookbook",
           "settings": {
-            "image": "shopify://shop_images/ins7_2022-03-02.jpg",
             "img_effect": "zoom",
             "b_effect": "none"
           },
@@ -1069,7 +1062,6 @@
         "lookbook_VqJTGD": {
           "type": "_lookbook",
           "settings": {
-            "image": "shopify://shop_images/ins6_2022-03-02.jpg",
             "img_effect": "zoom",
             "b_effect": "none"
           },
@@ -1121,7 +1113,6 @@
         "lookbook_NQi7Xf": {
           "type": "_lookbook",
           "settings": {
-            "image": "shopify://shop_images/ins5_2022-03-02.jpg",
             "img_effect": "zoom",
             "b_effect": "none"
           },
@@ -1153,7 +1144,6 @@
         "lookbook_zNfrP4": {
           "type": "_lookbook",
           "settings": {
-            "image": "shopify://shop_images/ins4_2022-03-02.jpg",
             "img_effect": "zoom",
             "b_effect": "none"
           },
@@ -1185,7 +1175,6 @@
         "lookbook_DaNAAh": {
           "type": "_lookbook",
           "settings": {
-            "image": "shopify://shop_images/ins3_2022-03-02.jpg",
             "img_effect": "zoom",
             "b_effect": "none"
           },
@@ -1217,7 +1206,6 @@
         "lookbook_AzchnW": {
           "type": "_lookbook",
           "settings": {
-            "image": "shopify://shop_images/ins1_2022-03-02.jpg",
             "img_effect": "zoom",
             "b_effect": "none"
           },
@@ -1249,7 +1237,6 @@
         "lookbook_MwHq4E": {
           "type": "_lookbook",
           "settings": {
-            "image": "shopify://shop_images/ins2_2022-03-02.jpg",
             "img_effect": "zoom",
             "b_effect": "none"
           },
