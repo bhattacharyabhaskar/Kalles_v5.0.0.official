@@ -72,13 +72,22 @@
                 "height": 30
               },
               "blocks": {}
+            },
+            "custom_liquid_inMpAD": {
+              "type": "custom-liquid",
+              "name": "ADD-ON",
+              "settings": {
+                "custom_liquid": "<!-- ✅ BEGIN SPECIAL SAREE ADD ON SECTION  -->\n                  {% if product.type == \"Saree\" %}\n                     {% render 'saree-addons', fabric_type: product.metafields.saree.fabric_type, blouse_piece_value: product.metafields.saree.BlousePiece %}\n                    {% render 'saree-addons-script' %}\n                  {% endif %}\n                  <!-- ✅ END SPECIAL SAREE ADD ON SECTION  -->"
+              },
+              "blocks": {}
             }
           },
           "block_order": [
             "product_title_ehRqkq",
             "product_price_9JizTC",
             "product_buy_button_aPmAbD",
-            "product_trust_badge_QALnxQ"
+            "product_trust_badge_QALnxQ",
+            "custom_liquid_inMpAD"
           ]
         },
         "main-product-medias": {
