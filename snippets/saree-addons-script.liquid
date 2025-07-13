@@ -1,3 +1,4 @@
+<script>
 document.addEventListener("DOMContentLoaded", function () {
   const parentVariantId = window?.product?.selected_or_first_available_variant?.id?.toString() ||
     window.meta?.product?.variants?.[0]?.id?.toString() ||
@@ -158,3 +159,4 @@ document.addEventListener("DOMContentLoaded", function () {
   submitButton.addEventListener("click", handleAddToCart);
   floatingBtn.addEventListener("click", handleAddToCart);
 });
+  </script>
