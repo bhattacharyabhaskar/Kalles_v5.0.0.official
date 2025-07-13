@@ -58,6 +58,7 @@ document.addEventListener("DOMContentLoaded", function () {
     floatingBtn.style.display = (!isInViewport && window.scrollY > 300) ? "flex" : "none";
   }
 
+  // Throttled scroll listener
   let scrollTimeout;
   window.addEventListener("scroll", () => {
     if (!scrollTimeout) {
@@ -75,6 +76,7 @@ document.addEventListener("DOMContentLoaded", function () {
     floatingBtn.innerText = label;
   }
 
+  // Make entire add-on box toggle checkbox
   document.querySelectorAll('.js-addon-box').forEach(box => {
     const checkbox = box.querySelector('.addon-checkbox');
 
@@ -145,23 +147,10 @@ document.addEventListener("DOMContentLoaded", function () {
 
       if (!addRes.ok) throw new Error("❌ Failed to add items");
 
-      // ✅ NEW drawer update using /cart.js and 'cart:update' event
-      try {
-        const cartData = await fetch('/cart.js').then(res => res.json());
+      const drawerTrigger = document.querySelector('[data-drawer-options*="cart"]');
+      if (drawerTrigger) drawerTrigger.click();
 
-        document.dispatchEvent(new CustomEvent('cart:update', {
-          detail: {
-            cartData,
-            source: 'product-form-component',
-            actionAfterATC: 'open_cart_drawer'
-          }
-        }));
-
-        console.log("✅ cart:update event dispatched using /cart.js");
-      } catch (err) {
-        console.error("❌ Cart drawer update failed", err);
-      }
-
+      document.dispatchEvent(new CustomEvent("cart:refresh", { bubbles: true }));
     } catch (err) {
       console.error("❌ Cart Update Error:", err);
       alert("Something went wrong. Please try again.");
