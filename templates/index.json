@@ -40,14 +40,14 @@
             "text_YrQhtV": {
               "type": "text",
               "settings": {
-                "text": "<p>SUMMER 2025</p>",
+                "text": "<p>FREE SHIPPING</p>",
                 "hidden_br_mobile": false,
                 "hidden_on_mobile": false,
                 "ffamily": "",
                 "text_size": "custom",
                 "line_height": "",
                 "font_weight": "medium",
-                "text_color": "hdt-s-text",
+                "text_color": "hdt-text-primary",
                 "countdown": "2025-12-30 15:00:00",
                 "txt_day": "days",
                 "font_size_text_lg": 18,
