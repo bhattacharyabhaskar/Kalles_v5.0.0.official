@@ -58,7 +58,6 @@ document.addEventListener("DOMContentLoaded", function () {
     floatingBtn.style.display = (!isInViewport && window.scrollY > 300) ? "flex" : "none";
   }
 
-  // Throttled scroll listener
   let scrollTimeout;
   window.addEventListener("scroll", () => {
     if (!scrollTimeout) {
@@ -76,7 +75,6 @@ document.addEventListener("DOMContentLoaded", function () {
     floatingBtn.innerText = label;
   }
 
-  // Make entire add-on box toggle checkbox
   document.querySelectorAll('.js-addon-box').forEach(box => {
     const checkbox = box.querySelector('.addon-checkbox');
 
@@ -104,55 +102,52 @@ document.addEventListener("DOMContentLoaded", function () {
     submitButton.innerText = 'Adding...';
     floatingBtn.innerText = 'Adding...';
 
-    const checkedAddons = Array.from(document.querySelectorAll('.addon-checkbox:checked'))
-      .map(cb => cb.getAttribute('data-variant-id'))
-      .filter(Boolean);
-
     try {
-      const cart = await fetch('/cart.js').then(res => res.json());
-      const updates = {};
-      cart.items.forEach(item => {
-        const linked = item.properties?.['Linked to Saree'];
-        if (item.variant_id == parentVariantId || linked == parentVariantId) {
-          updates[item.key] = 0;
-        }
+      // Gather selected add-ons
+      const checkedAddons = Array.from(document.querySelectorAll('.addon-checkbox:checked'))
+        .map(cb => cb.getAttribute('data-variant-id'))
+        .filter(Boolean);
+
+      // Prepare FormData manually
+      const formData = new FormData();
+      formData.append('items[0][id]', parentVariantId);
+      formData.append('items[0][quantity]', 1);
+
+      checkedAddons.forEach((addonId, index) => {
+        const i = index + 1;
+        formData.append(`items[${i}][id]`, addonId);
+        formData.append(`items[${i}][quantity]`, 1);
+        formData.append(`items[${i}][properties][Linked to Saree]`, parentVariantId);
       });
 
-      if (Object.keys(updates).length > 0) {
-        await fetch('/cart/update.js', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ updates, sections: "cart_data,mini_cart" })
-        });
-        await new Promise(resolve => setTimeout(resolve, 300));
-      }
-
-      const itemsToAdd = [
-        ...checkedAddons.map(id => ({
-          id,
-          quantity: 1,
-          properties: { "Linked to Saree": parentVariantId }
-        })),
-        {
-          id: parentVariantId,
-          quantity: 1
-        }
-      ];
-
-      const addRes = await fetch("/cart/add.js", {
+      const addRes = await fetch("/cart/add", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ items: itemsToAdd })
+        body: formData,
       });
 
       if (!addRes.ok) throw new Error("❌ Failed to add items");
 
-      const drawerTrigger = document.querySelector('[data-drawer-options*="cart"]');
-      if (drawerTrigger) drawerTrigger.click();
+      console.log("✅ Product and add-ons added via native POST");
 
-      document.dispatchEvent(new CustomEvent("cart:refresh", { bubbles: true }));
+      // Open drawer
+      const drawerTrigger = document.querySelector('[data-drawer-options*="cart"]');
+      if (drawerTrigger) {
+        drawerTrigger.click();
+        console.log("🛒 Drawer opened via trigger element");
+      } else {
+        console.warn("❌ Drawer trigger not found");
+      }
+
+      // Refresh cart count
+      const cart = await fetch('/cart.js').then(res => res.json());
+      document.querySelectorAll('[data-cart-count]').forEach(el => {
+        el.textContent = cart.item_count;
+        el.classList.remove('t4s-op-0');
+      });
+      console.log("🔢 Cart count updated:", cart.item_count);
+
     } catch (err) {
-      console.error("❌ Cart Update Error:", err);
+      console.error("❌ Cart update failed:", err);
       alert("Something went wrong. Please try again.");
     } finally {
       submitButton.disabled = false;
