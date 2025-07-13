@@ -146,9 +146,15 @@ document.addEventListener("DOMContentLoaded", function () {
       });
 
       if (!addRes.ok) throw new Error("❌ Failed to add items");
+      const drawerTrigger = document.querySelector('[data-drawer-options*="#t4s-mini_cart"]');
+      if (drawerTrigger) {
+        drawerTrigger.click();
+      } else if (window.T4S && typeof T4S.openDrawer === 'function') {
+        T4S.openDrawer('#t4s-mini_cart');
+      }
 
-      const drawerTrigger = document.querySelector('[data-drawer-options*="cart"]');
-      if (drawerTrigger) drawerTrigger.click();
+      //const drawerTrigger = document.querySelector('[data-drawer-options*="cart"]');
+      //if (drawerTrigger) drawerTrigger.click();
 
       document.dispatchEvent(new CustomEvent("cart:refresh", { bubbles: true }));
     } catch (err) {
