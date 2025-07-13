@@ -10,7 +10,6 @@ document.addEventListener("DOMContentLoaded", function () {
 
   if (!form || !submitButton || !parentVariantId) return;
 
-  // Create floating ATC button
   const floatingBtn = submitButton.cloneNode(true);
   floatingBtn.removeAttribute("id");
   floatingBtn.id = "floating-atc-btn";
@@ -58,7 +57,6 @@ document.addEventListener("DOMContentLoaded", function () {
     floatingBtn.style.display = (!isInViewport && window.scrollY > 300) ? "flex" : "none";
   }
 
-  // Throttled scroll listener
   let scrollTimeout;
   window.addEventListener("scroll", () => {
     if (!scrollTimeout) {
@@ -76,7 +74,6 @@ document.addEventListener("DOMContentLoaded", function () {
     floatingBtn.innerText = label;
   }
 
-  // Make entire add-on box toggle checkbox
   document.querySelectorAll('.js-addon-box').forEach(box => {
     const checkbox = box.querySelector('.addon-checkbox');
 
@@ -147,20 +144,24 @@ document.addEventListener("DOMContentLoaded", function () {
 
       if (!addRes.ok) throw new Error("❌ Failed to add items");
 
-     const sectionId = document.querySelector('cart-drawer')?.getAttribute('section-id') || 'main-cart-items'; // adjust as needed
+      // ✅ Open Drawer
+      const sectionId = "sections--19546057572585__cart-drawer";
+      const response = await fetch(`/cart?sections=${sectionId}`);
+      const sectionHTML = await response.json();
 
-      const res = await fetch(`${Shopify.routes.root}cart?sections=${sectionId}`);
-      const html = await res.json();
-      
+      if (!sectionHTML || !sectionHTML[sectionId]) {
+        throw new Error(`❌ Failed to fetch section ${sectionId}`);
+      }
+
       document.dispatchEvent(new CustomEvent("cart:update", {
         detail: {
-          cartData: { sections: html },
+          cartData: { sections: sectionHTML },
           source: "product-form-component",
           actionAfterATC: "open_cart_drawer"
         }
       }));
 
-      document.dispatchEvent(new CustomEvent("cart:refresh", { bubbles: true }));
+      console.log("✅ Drawer update dispatched using section:", sectionId);
     } catch (err) {
       console.error("❌ Cart Update Error:", err);
       alert("Something went wrong. Please try again.");
