@@ -1,0 +1,27 @@
+<div class="ivy-upsell-box js-addon-box" data-variant-id="{{ variant.id }}">
+  <input
+    type="checkbox"
+    class="addon-checkbox ivy-upsell-checkbox"
+    data-variant-id="{{ variant.id }}"
+  />
+  <div class="ivy-upsell-content">
+    <div class="ivy-upsell-left">
+      <img src="{{ addon_product.featured_image | image_url: width: 100 }}" alt="{{ addon_product.title }}" />
+      <div class="ivy-upsell-text">
+        <div class="ivy-upsell-title">{{ addon_product.title }}</div>
+        <div class="ivy-upsell-price-row">
+          {% if variant.compare_at_price > variant.price %}
+            <del>{{ variant.compare_at_price | money }}</del>
+            <ins>+{{ variant.price | money }}</ins>
+            <span class="ivy-upsell-savings">
+              SAVE {{ variant.compare_at_price | minus: variant.price | money }}
+            </span>
+          {% else %}
+            <ins>{{ variant.price | money }}</ins>
+          {% endif %}
+        </div>
+        <div class="ivy-upsell-desc"></div>
+      </div>
+    </div>
+  </div>
+</div>
