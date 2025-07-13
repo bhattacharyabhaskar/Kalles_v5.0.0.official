@@ -226,6 +226,13 @@
     "show_cart_note": false,
     "cart_drawer_collection": "",
     "content_for_index": [],
+    "blocks": {
+      "10891472601742428568": {
+        "type": "shopify://apps/gg-hover-slider/blocks/app-embed-block/614990d1-808d-4cde-ad6d-38290e605d06",
+        "disabled": true,
+        "settings": {}
+      }
+    },
     "color_schemes": {
       "scheme-1": {
         "settings": {
