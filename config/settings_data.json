@@ -102,7 +102,7 @@
     "social_vimeo_link": "",
     "social_snapchat_link": "",
     "predictive_search_enabled": true,
-    "predictive_search_show_vendor": true,
+    "predictive_search_show_vendor": false,
     "predictive_search_show_price": true,
     "search_fullwidth": true,
     "products_suggest": [
