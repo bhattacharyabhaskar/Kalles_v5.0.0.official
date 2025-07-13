@@ -147,8 +147,17 @@ document.addEventListener("DOMContentLoaded", function () {
 
       if (!addRes.ok) throw new Error("❌ Failed to add items");
 
-      document.dispatchEvent(new CustomEvent("cart:refresh", {
-        bubbles: true
+     const sectionId = document.querySelector('cart-drawer')?.getAttribute('section-id') || 'main-cart-items'; // adjust as needed
+
+      const res = await fetch(`${Shopify.routes.root}cart?sections=${sectionId}`);
+      const html = await res.json();
+      
+      document.dispatchEvent(new CustomEvent("cart:update", {
+        detail: {
+          cartData: { sections: html },
+          source: "product-form-component",
+          actionAfterATC: "open_cart_drawer"
+        }
       }));
 
       document.dispatchEvent(new CustomEvent("cart:refresh", { bubbles: true }));
