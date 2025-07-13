@@ -146,12 +146,51 @@ document.addEventListener("DOMContentLoaded", function () {
       });
 
       if (!addRes.ok) throw new Error("❌ Failed to add items");
-      const drawerTrigger = document.querySelector('[data-drawer-options*="#t4s-mini_cart"]');
-      if (drawerTrigger) {
-        drawerTrigger.click();
-      } else if (window.T4S && typeof T4S.openDrawer === 'function') {
-        T4S.openDrawer('#t4s-mini_cart');
-      }
+      
+      console.log("🛒 Fetching updated cart drawer...");
+
+await fetch(window.Shopify.routes.root + 'cart?section_id=t4s-mini_cart')
+  .then(res => {
+    if (!res.ok) throw new Error("❌ Failed to fetch mini_cart section");
+    return res.text();
+  })
+  .then(html => {
+    console.log("✅ Mini cart HTML fetched");
+
+    const dom = new DOMParser().parseFromString(html, 'text/html');
+    const miniCartHtml = dom.querySelector('#t4s-mini_cart')?.innerHTML;
+
+    if (!miniCartHtml) {
+      console.warn("⚠️ Could not find #t4s-mini_cart in fetched HTML");
+      return;
+    }
+
+    const container = document.querySelector('#t4s-mini_cart');
+    if (!container) {
+      console.error("❌ #t4s-mini_cart container not found in DOM");
+      return;
+    }
+
+    container.innerHTML = miniCartHtml;
+    console.log("✅ Mini cart DOM updated");
+
+    if (window.T4S && typeof T4S.openDrawer === 'function') {
+      console.log("🚪 Opening drawer via T4S.openDrawer()");
+      T4S.openDrawer('#t4s-mini_cart');
+    } else {
+      console.warn("⚠️ T4S.openDrawer not available");
+    }
+  })
+  .catch(err => {
+    console.error("❌ Drawer update failed:", err);
+  });
+
+      //const drawerTrigger = document.querySelector('[data-drawer-options*="#t4s-mini_cart"]');
+     // if (drawerTrigger) {
+       // drawerTrigger.click();
+     // } else if (window.T4S && typeof T4S.openDrawer === 'function') {
+      //  T4S.openDrawer('#t4s-mini_cart');
+     // }
 
       //const drawerTrigger = document.querySelector('[data-drawer-options*="cart"]');
       //if (drawerTrigger) drawerTrigger.click();
