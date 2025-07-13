@@ -1,0 +1,83 @@
+
+<div id="block-{{ block.id }}" class="hdt-socials-block" {{ block.shopify_attributes }}>
+  {%- render 'social_sharing', socials_style: block.settings.socials_style, socials_size: block.settings.socials_size, bd_radius: block.settings.bd_radius, space_item: block.settings.space_item -%}
+</div>
+{% schema %}
+{
+  "name": "t:sections.main-product.blocks.share.name",
+  "tag": null,
+  "settings": [
+    {
+      "type": "paragraph",
+      "content": "t:blocks.social-media.settings.paragraph.content"
+    },
+    {
+      "type": "select",
+      "id": "socials_style",
+      "label": "t:blocks.social-media.settings.socials_style.label",
+      "default": "default",
+      "options": [
+        {
+          "value": "default",
+          "label": "t:blocks.social-media.settings.socials_style.options__1.label"
+        },
+        {
+          "value": "outline",
+          "label": "t:blocks.social-media.settings.socials_style.options__2.label"
+        },
+        {
+          "value": "simple",
+          "label": "t:blocks.social-media.settings.socials_style.options__3.label"
+        },
+        {
+          "value": "outline-background",
+          "label": "t:blocks.social-media.settings.socials_style.options__4.label"
+        }
+      ]         
+    },
+    {
+      "type": "select",
+      "id": "socials_size",
+      "label": "t:blocks.social-media.settings.socials_size.label",
+      "default": "small",
+      "options": [
+        {
+          "value": "small",
+          "label": "t:blocks.social-media.settings.socials_size.options__1.label"
+        },
+        {
+          "value": "medium",
+          "label": "t:blocks.social-media.settings.socials_size.options__2.label"
+        },
+        {
+          "value": "large",
+          "label": "t:blocks.social-media.settings.socials_size.options__3.label"
+        }
+      ]
+    },
+    {
+      "type": "range",
+      "id": "bd_radius", 
+      "label": "t:blocks.social-media.settings.bd_radius.label",
+      "unit":"px",
+      "min": 0,
+      "max": 30,
+      "default": 30,
+      "step": 1
+    },
+    {
+      "type":"range",
+      "id":"space_item",
+      "label":"t:blocks.social-media.settings.space_item.label",
+      "min": 0,
+      "max": 100,
+      "step": 1,
+      "unit": "px",
+      "default": 10
+    }
+  ],
+  "presets": [
+    { "name": "t:sections.main-product.blocks.share.name" }
+  ]
+}
+{% endschema %}

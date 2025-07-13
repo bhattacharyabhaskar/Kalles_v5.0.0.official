@@ -1,0 +1,22 @@
+
+{%- liquid
+  assign target = product
+  assign product = section.settings.product | default: target
+  unless product.available
+    continue
+  endunless
+-%}
+<button class="hdt-pr-popup__ask hdt-s-text hdt-text-base hdt-font-semibold" aria-controls="modal-contactFormAsk" data-product="{{ product.title | replace: '"', "''" }} - {{ request.origin }}{{ product.url }}">{{ 'products.product.ask_question' | t }}</button>
+{% schema %}
+{
+  "name": "t:sections.main-product.blocks.extra_link.settings.header_ask.content",
+  "tag": null,
+  "settings": [
+  ],
+  "presets": [
+    {
+      "name": "t:sections.main-product.blocks.extra_link.settings.header_ask.content"
+    }
+  ]
+}
+{% endschema %}
