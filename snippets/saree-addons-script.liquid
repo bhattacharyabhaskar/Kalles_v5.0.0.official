@@ -146,9 +146,7 @@ document.addEventListener("DOMContentLoaded", function () {
       if (!addRes.ok) throw new Error("❌ Failed to add items");
 
       // ✅ NEW drawer refresh & open logic (ThemeEvents-based)
-      const cartDrawerEl = document.querySelector('cart-drawer-component');
-      const sectionId = cartDrawerEl?.getAttribute('section-id');
-      if (!sectionId) throw new Error("❌ cart-drawer section ID not found");
+      const sectionId = 'cart_drawer'; // Manually set based on your theme
 
       const res = await fetch(`/cart?section_id=${sectionId}`);
       const html = await res.text();
