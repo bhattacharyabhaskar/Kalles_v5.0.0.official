@@ -35,9 +35,9 @@
             "product_title_ehRqkq": {
               "type": "_product-title",
               "settings": {
-                "txt_tr_pr": "none",
+                "txt_tr_pr": "uppercase",
                 "tag": "h2",
-                "heading_size": "h6",
+                "heading_size": "h4",
                 "font_size_heading_lg": 50,
                 "font_size_heading": 24,
                 "letter_spacing_heading": 0,
