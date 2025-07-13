@@ -129,6 +129,13 @@ document.addEventListener("DOMContentLoaded", function () {
 
       console.log("✅ Product and add-ons added via native POST");
 
+      if (window.T4SThemeSP?.Drawer?.open) {
+        console.log("🛒 Opening drawer via T4SThemeSP.Drawer.open");
+        window.T4SThemeSP.Drawer.open('[data-drawer-id="cart_drawer"]');
+      } else {
+        console.warn("❌ T4SThemeSP.Drawer.open not available");
+      }
+
       // Open drawer
       const drawerTrigger = document.querySelector('[data-drawer-options*="cart"]');
       if (drawerTrigger) {
