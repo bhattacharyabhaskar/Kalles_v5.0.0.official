@@ -147,14 +147,8 @@ document.addEventListener("DOMContentLoaded", function () {
 
       if (!addRes.ok) throw new Error("❌ Failed to add items");
 
-      const cartData = await fetch("/cart.js").then(res => res.json());
-
-      document.dispatchEvent(new CustomEvent("cart:update", {
-        detail: {
-          cartData,
-          source: "product-form-component",
-          actionAfterATC: "open_cart_drawer"
-        }
+      document.dispatchEvent(new CustomEvent("cart:refresh", {
+        bubbles: true
       }));
 
       document.dispatchEvent(new CustomEvent("cart:refresh", { bubbles: true }));
