@@ -1,0 +1,56 @@
+{%- comment -%}
+  Renders a form back instock
+
+  Accepts:
+  - product: {Object} product object.
+  - block: {Object} passing the block information.
+  - product_form_id: {String} Id of the product form to which the variant picker is associated.
+  - section_id
+  - toogle_hidden
+  Usage:
+  {% render 'back-instock', product: product, product_form_id: product_form_id, section_id: section.id %}
+{%- endcomment -%}
+
+{%- assign unavailable_variants = product.variants | where: 'available', false -%}
+
+{%- if unavailable_variants.size > 0 -%}
+
+{%- liquid
+  assign form_notify_id = 'ContactFormNotify' | append: section_id | append: product.id
+  assign selected_variant = product.selected_or_first_available_variant
+  if selected_variant and selected_variant.available == false
+    assign unavailable_variant_fist = selected_variant
+  else
+    assign unavailable_variant_fist = unavailable_variants.first
+  endif
+  -%}
+
+<hdt-back-instock form="{{ product_form_id }}" class="hdt-back-instock"{% if product.has_only_default_variant %} is-pr-default{% endif %}{% if toogle_hidden %} toogle-hidden{% if selected_variant and selected_variant.available %} hidden{% endif %}{% endif %}>
+  {%- form 'contact', id: form_notify_id -%}
+    {%- if form.posted_successfully? -%}
+      <div class="hdt-form__message">
+        {% render 'icon' with 'success' %} {{ 'products.product.back_in_stock.success' | t }}
+      </div>
+    {%- elsif form.errors -%}
+      <div class="hdt-form__message">
+        {% render 'icon' with 'error' %} {{ form.errors.translated_fields.email | capitalize }}: {{ form.errors.messages.email }}
+      </div>
+    {%- endif -%}
+    <h3>{{ 'products.product.back_in_stock.title' | t }}</h3>
+    <p>{{ 'products.product.back_in_stock.sub_title' | t }}</p>
+    <textarea rows="1" name="contact[product]" class="hdt-hidden">{{ product.title }}{% unless product.has_only_default_variant %} ( {{ unavailable_variant_fist.title }} ){% endunless %} - {{ request.origin }}{{ unavailable_variant_fist.url }}</textarea>
+    <textarea rows="1" name="contact[message]" class="hdt-hidden">{{ 'products.product.back_in_stock.please_notify' | t }}</textarea>
+    {%- unless product.has_only_default_variant -%}
+    <textarea rows="1" back-instock-text class="hdt-hidden">{{ product.title }}{% unless product.has_only_default_variant %} ( nt94_name ){% endunless %} - {{ request.origin }}{{ product.url }}?variant=nt94_vid</textarea>
+    <select back-instock-select class="hdt-select" form="{{ product_form_id }}">
+      {%- for variant in unavailable_variants -%}
+        <option value="{{ variant.id }}"{% if unavailable_variant_fist.id == variant.id %} selected{% endif %}>{{ variant.title }}</option>
+      {%- endfor -%}
+    </select>
+    {%- endunless -%}
+    <input class="hdt-input" type="email" name="contact[email]" autocomplete="email" autocorrect="off" autocapitalize="off" required="required" placeholder="{{ 'products.product.back_in_stock.email' | t }}">
+    <button type="submit" class="hdt-btn">{{ 'products.product.back_in_stock.submit' | t }}</button>
+  {%- endform -%}
+</hdt-back-instock>
+
+{%- endif -%}
