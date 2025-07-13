@@ -50,37 +50,6 @@
               "settings": {},
               "blocks": {}
             },
-            "product_description_AJaqwJ": {
-              "type": "_product-description",
-              "disabled": true,
-              "settings": {
-                "des_mode": "2",
-                "short_des": "<p>Go kalles this summer with this vintage navy and white striped v-neck t-shirt from the Nike. Perfect for pairing with denim and white kicks for a stylish kalles vibe.</p>",
-                "readm": false,
-                "length": 31,
-                "readm_txt": "Read more",
-                "readl_txt": "Read less"
-              },
-              "blocks": {}
-            },
-            "product_variant_picker_WMmDTM": {
-              "type": "_product-variant-picker",
-              "disabled": true,
-              "settings": {
-                "color_picker_type": "color_rounded",
-                "color_size": "medium",
-                "picker_type": "circle",
-                "size_chart_source": "page",
-                "size_chart_page": "size-chart"
-              },
-              "blocks": {}
-            },
-            "quantity_selector_tarLcL": {
-              "type": "_quantity-selector",
-              "disabled": true,
-              "settings": {},
-              "blocks": {}
-            },
             "product_buy_button_aPmAbD": {
               "type": "_product-buy-button",
               "settings": {
@@ -103,38 +72,6 @@
                 "height": 30
               },
               "blocks": {}
-            },
-            "product_extra_link_HfDmDV": {
-              "type": "_product-extra-link",
-              "settings": {},
-              "blocks": {
-                "product_size_chart_6Y9gBm": {
-                  "type": "_product-size-chart",
-                  "settings": {
-                    "size_chart": "3",
-                    "size_chart_source": "page",
-                    "size_chart_page": "size-chart"
-                  },
-                  "blocks": {}
-                },
-                "product_delivery_return_CqMf76": {
-                  "type": "_product-delivery-return",
-                  "settings": {
-                    "page_delivery": "delivery-return"
-                  },
-                  "blocks": {}
-                },
-                "product_ask_question_nWC4pL": {
-                  "type": "_product-ask-question",
-                  "settings": {},
-                  "blocks": {}
-                }
-              },
-              "block_order": [
-                "product_size_chart_6Y9gBm",
-                "product_delivery_return_CqMf76",
-                "product_ask_question_nWC4pL"
-              ]
             },
             "product_meta_hnDEjn": {
               "type": "_product-meta",
@@ -176,12 +113,8 @@
           "block_order": [
             "product_title_ehRqkq",
             "product_price_9JizTC",
-            "product_description_AJaqwJ",
-            "product_variant_picker_WMmDTM",
-            "quantity_selector_tarLcL",
             "product_buy_button_aPmAbD",
             "product_trust_badge_QALnxQ",
-            "product_extra_link_HfDmDV",
             "product_meta_hnDEjn",
             "socials_XYJPwj"
           ]
