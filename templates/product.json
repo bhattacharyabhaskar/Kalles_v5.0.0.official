@@ -56,8 +56,8 @@
                 "show_quantity_selector": false,
                 "show_dynamic_checkout": true,
                 "show_gift_card_recipient": true,
-                "show_wishlist": true,
-                "show_compare": true
+                "show_wishlist": false,
+                "show_compare": false
               },
               "blocks": {}
             },
