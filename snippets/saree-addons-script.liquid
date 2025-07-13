@@ -145,33 +145,28 @@ document.addEventListener("DOMContentLoaded", function () {
 
       if (!addRes.ok) throw new Error("❌ Failed to add items");
 
-      // ✅ NEW drawer refresh & open logic (ThemeEvents-based)
-     try {
-  const drawer = document.querySelector('[data-drawer-id="cart_drawer"]');
-  const sectionId = drawer?.getAttribute('section-id') || 'main-cart-items'; // fallback ID
+      // ✅ Final drawer logic using cart:update event
+      try {
+        const sectionId = 'hdt_cart_drawer'; // Replace with correct section-id if needed
+        const res = await fetch(`/cart?section_id=${sectionId}`);
+        if (!res.ok) throw new Error(`❌ Failed to fetch section ${sectionId}`);
 
-  const res = await fetch(`/cart?section_id=${sectionId}`);
-  if (!res.ok) throw new Error(`❌ Failed to fetch section ${sectionId}`);
+        const html = await res.text();
+        const sections = {};
+        sections[sectionId] = html;
 
-  const html = await res.text();
-  const sections = {};
-  sections[sectionId] = html;
+        document.dispatchEvent(new CustomEvent('cart:update', {
+          detail: {
+            cartData: { sections },
+            source: 'product-form-component',
+            actionAfterATC: 'open_cart_drawer'
+          }
+        }));
 
-  document.dispatchEvent(new CustomEvent('cart:update', {
-    detail: {
-      cartData: { sections },
-      source: 'product-form-component',
-      actionAfterATC: 'open_cart_drawer'
-    }
-  }));
-
-  console.log("✅ 'cart:update' event dispatched to open drawer");
-} catch (err) {
-  console.error("❌ Cart Update Error:", err);
-}
-
-
-      console.log("✅ cartUpdate event dispatched to open drawer");
+        console.log("✅ cart:update event dispatched to open drawer");
+      } catch (err) {
+        console.error("❌ Cart Update Error:", err);
+      }
 
     } catch (err) {
       console.error("❌ Cart Update Error:", err);
