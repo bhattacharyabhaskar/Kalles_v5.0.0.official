@@ -147,43 +147,31 @@ document.addEventListener("DOMContentLoaded", function () {
 
       if (!addRes.ok) throw new Error("❌ Failed to add items");
       
-      console.log("🛒 Fetching updated cart drawer...");
+ console.log("🛒 Refreshing cart using cart.js...");
 
-await fetch(window.Shopify.routes.root + 'cart?section_id=t4s-mini_cart')
-  .then(res => {
-    if (!res.ok) throw new Error("❌ Failed to fetch mini_cart section");
-    return res.text();
-  })
-  .then(html => {
-    console.log("✅ Mini cart HTML fetched");
+try {
+  const cartData = await fetch('/cart.js').then(res => res.json());
 
-    const dom = new DOMParser().parseFromString(html, 'text/html');
-    const miniCartHtml = dom.querySelector('#t4s-mini_cart')?.innerHTML;
-
-    if (!miniCartHtml) {
-      console.warn("⚠️ Could not find #t4s-mini_cart in fetched HTML");
-      return;
-    }
-
-    const container = document.querySelector('#t4s-mini_cart');
-    if (!container) {
-      console.error("❌ #t4s-mini_cart container not found in DOM");
-      return;
-    }
-
-    container.innerHTML = miniCartHtml;
-    console.log("✅ Mini cart DOM updated");
-
-    if (window.T4S && typeof T4S.openDrawer === 'function') {
-      console.log("🚪 Opening drawer via T4S.openDrawer()");
-      T4S.openDrawer('#t4s-mini_cart');
-    } else {
-      console.warn("⚠️ T4S.openDrawer not available");
-    }
-  })
-  .catch(err => {
-    console.error("❌ Drawer update failed:", err);
+  // Update cart count manually
+  const countEls = document.querySelectorAll('[data-cart-count]');
+  countEls.forEach(el => {
+    el.textContent = cartData.item_count;
+    el.classList.remove('t4s-op-0'); // Make it visible if it's hidden
   });
+
+  // Open the drawer
+  if (window.T4S && typeof T4S.openDrawer === 'function') {
+    console.log("🚪 Opening drawer via T4S.openDrawer()");
+    T4S.openDrawer('#t4s-mini_cart');
+  } else {
+    console.warn("⚠️ T4S.openDrawer function not available");
+  }
+
+  document.dispatchEvent(new CustomEvent('cart:refresh', { bubbles: true }));
+  console.log("✅ Cart refreshed");
+} catch (err) {
+  console.error("❌ Failed to refresh cart or open drawer", err);
+}
 
       //const drawerTrigger = document.querySelector('[data-drawer-options*="#t4s-mini_cart"]');
      // if (drawerTrigger) {
