@@ -200,7 +200,7 @@
             "enable_thumb_efect": true,
             "image_ratio": "adapt_image",
             "image_size": true,
-            "image_zoom": "zoom",
+            "image_zoom": "zoom_lightbox",
             "image_zoom_type": "external",
             "zoom_level": 2,
             "max_zoom_lightbox": 3,
