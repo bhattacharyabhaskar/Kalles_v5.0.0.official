@@ -1,129 +1,58 @@
 <script>
-/* ------------------  Saree Add-ons helper – v1.0  ------------------ */
-document.addEventListener('DOMContentLoaded', () => {
-  /* ------------------------------------------------------------------
-     0.  Grab the important DOM nodes once
-  ------------------------------------------------------------------ */
-  const form =
-    document.querySelector('form.hdt-main-product-form')          // main product form
-    || document.querySelector('form.hdt-product-form-fbt');       // FBT/bundle form
+document.addEventListener("DOMContentLoaded", function () {
+  const form = document.querySelector('form[action="/cart/add"]');
+  const atcButton = form?.querySelector('button[type="submit"]');
 
-  if (!form) { console.warn('⚠️  Add-on script: form not found'); return; }
+  if (!form || !atcButton) {
+    console.warn("❌ Main form or Add to Cart button not found");
+    return;
+  }
 
-  const submitBtn   = form.querySelector('button[type="submit"]');
-  const floatingBtn = createFloatingClone(submitBtn);             // △ helper below
+  // Remove any old hidden addon inputs before a new submission
+  function clearPreviousAddonInputs() {
+    const oldInputs = form.querySelectorAll('.addon-hidden-input');
+    oldInputs.forEach((input) => input.remove());
+  }
 
-  const PARENT_VARIANT_ID =
-    form.querySelector('input[name="id"]')?.value ||
-    window.product?.selected_or_first_available_variant?.id;
+  // Inject selected add-ons into form before submission
+  function injectAddonsIntoForm() {
+    const checkedAddons = document.querySelectorAll('.addon-checkbox:checked');
+    console.log(`📦 Add-ons selected: ${checkedAddons.length}`);
+    clearPreviousAddonInputs();
 
-  if (!PARENT_VARIANT_ID) { console.error('❌ Parent variant not found'); return; }
+    checkedAddons.forEach((checkbox, index) => {
+      const variantId = checkbox.dataset.variantId;
 
-  console.log('🛠  Add-on script initialised | ParentVariant:', PARENT_VARIANT_ID);
+      if (!variantId) {
+        console.warn(`⚠️ Missing variant ID on addon checkbox #${index}`);
+        return;
+      }
 
-  /* ------------------------------------------------------------------
-     1.  Handle add-on checkbox UI
-  ------------------------------------------------------------------ */
-  const addonBoxes = Array.from(document.querySelectorAll('.js-addon-box'));
+      const inputId = document.createElement("input");
+      inputId.type = "hidden";
+      inputId.name = "items[][id]";
+      inputId.value = variantId;
+      inputId.classList.add("addon-hidden-input");
+      form.appendChild(inputId);
 
-  addonBoxes.forEach(box => {
-    const cb = box.querySelector('.addon-checkbox');
+      const inputQty = document.createElement("input");
+      inputQty.type = "hidden";
+      inputQty.name = "items[][quantity]";
+      inputQty.value = 1;
+      inputQty.classList.add("addon-hidden-input");
+      form.appendChild(inputQty);
 
-    // click anywhere on box toggles
-    box.addEventListener('click', evt => {
-      if (evt.target.tagName !== 'INPUT') cb.checked = !cb.checked;
-      box.classList.toggle('selected', cb.checked);
-      updateButtonLabels();
+      console.log(`✅ Injected addon variant ${variantId}`);
     });
 
-    // direct click on checkbox (stop bubbling)
-    cb.addEventListener('click', evt => {
-      evt.stopPropagation();
-      box.classList.toggle('selected', cb.checked);
-      updateButtonLabels();
-    });
-  });
-
-  /* ------------------------------------------------------------------
-     2.  Inject property & let the form POST normally
-  ------------------------------------------------------------------ */
-  form.addEventListener('submit', evt => {
-    // QUICK check – if no add-on selected, nothing special to do.
-    const checkedAddons = addonBoxes
-      .filter(b => b.querySelector('.addon-checkbox').checked
-                && !b.querySelector('.addon-checkbox').disabled);
-
-    if (checkedAddons.length === 0) {
-      console.log('➡️ No add-ons selected → letting default ATC run');
-      return;   // let theme handle everything
+    if (checkedAddons.length > 0) {
+      console.log("✅ Properties injected, form will POST normally");
     }
+  }
 
-    console.log('📦 Add-ons selected:', checkedAddons.length);
-
-    // First remove any stale inputs from earlier attempts
-    form.querySelectorAll('input[name$="[properties][Linked to Saree]"]').forEach(n => n.remove());
-
-    // For each checked add-on, append the Linked to Saree property
-    checkedAddons.forEach(box => {
-      const hiddenInput       = document.createElement('input');
-      hiddenInput.type        = 'hidden';
-      hiddenInput.name        = 'items[][properties][Linked to Saree]';
-      hiddenInput.value       = PARENT_VARIANT_ID;
-      form.appendChild(hiddenInput);
-    });
-
-    console.log('✅ Properties injected, form will POST normally');
-    // do NOT preventDefault — theme’s JS will submit,
-    // open drawer, refresh count, etc.
+  // Attach listener to inject add-ons before the form submission
+  form.addEventListener("submit", function (e) {
+    injectAddonsIntoForm();
   });
-
-  /* ------------------------------------------------------------------
-     3.  Helpers
-  ------------------------------------------------------------------ */
-  function updateButtonLabels() {
-    const anyChecked = form.querySelectorAll('.addon-checkbox:checked').length > 0;
-    const label      = anyChecked ? 'Add to Cart with Add-ons' : 'Add to Cart';
-    submitBtn.querySelector('.hdt-btn-atc_text').textContent = label;
-    floatingBtn.textContent = label;
-  }
-
-  function createFloatingClone(srcBtn) {
-    const clone = srcBtn.cloneNode(true);
-    clone.id    = 'floating-atc-btn';
-    clone.querySelector('.hdt-btn-atc_text')?.remove(); // remove inner span
-    clone.textContent = srcBtn.textContent;             // plain text
-
-    Object.assign(clone.style, {
-      background:  '#5b1a1a', color:'#fff', fontSize:'14px', fontWeight:'600',
-      fontFamily: 'Poppins', borderRadius:'40px', padding:'5px 25px',
-      textTransform:'uppercase', border:'none', width:'90%', maxWidth:'570px',
-      height:'40px', display:'none', position:'fixed', bottom:'20px', left:'50%',
-      transform:'translateX(-50%)', zIndex:'9999', cursor:'pointer',
-      boxShadow:'0 4px 12px rgba(0,0,0,.25)', transition:'background .3s'
-    });
-    clone.addEventListener('mouseenter',()=>clone.style.background='#a03e87');
-    clone.addEventListener('mouseleave',()=>clone.style.background='#5b1a1a');
-
-    clone.addEventListener('click', () => submitBtn.click()); // proxy click
-    document.body.appendChild(clone);
-
-    // show / hide on scroll
-    window.addEventListener('scroll', throttle(() => {
-      const isMobile = innerWidth <= 767;
-      const rect     = srcBtn.getBoundingClientRect();
-      const inView   = rect.top >= 0 && rect.bottom <= innerHeight;
-      clone.style.display = isMobile && !inView && scrollY > 300 ? 'flex' : 'none';
-    }, 100));
-    return clone;
-  }
-
-  // simple throttle
-  function throttle(fn, wait) {
-    let t = null;
-    return (...args) => {
-      if (t) return;
-      t = setTimeout(()=>{ fn(...args); t=null; }, wait);
-    };
-  }
 });
 </script>
