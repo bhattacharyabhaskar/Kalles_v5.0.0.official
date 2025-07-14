@@ -122,11 +122,7 @@
         "group_product_9RYttB"
       ],
       "settings": {
-        "product_list_fbt": [
-          "matching-petticoat",
-          "stitched-designer-blouse-2",
-          "pre-stitched-saree"
-        ],
+        "product_list_fbt": [],
         "sticky_atc": false,
         "colors_by_section": false,
         "color_scheme": "",
