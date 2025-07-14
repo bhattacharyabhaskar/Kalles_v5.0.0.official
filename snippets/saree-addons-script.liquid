@@ -44,12 +44,15 @@ document.addEventListener("DOMContentLoaded", function () {
 
   atcForm.addEventListener("submit", async function (e) {
     e.preventDefault(); // Stop auto submission
+
     console.log("🖱️ ATC button clicked, preparing form...");
 
     const parentVariantId =
       window.product?.selected_or_first_available_variant?.id ||
       window.meta?.product?.variants?.[0]?.id ||
       ShopifyAnalytics?.meta?.selectedVariantId;
+
+    console.log("🧩 Parent Variant ID to remove:", parentVariantId);
 
     if (!parentVariantId) {
       console.warn("⚠️ Parent Variant ID not found");
@@ -62,9 +65,12 @@ document.addEventListener("DOMContentLoaded", function () {
       console.log("🧹 Checking cart for duplicates...");
       const cart = await fetch('/cart.js').then(res => res.json());
       const updates = {};
+
       cart.items.forEach(item => {
         const linked = item.properties?.['Linked to Saree'];
-        if (item.variant_id == parentVariantId || linked == parentVariantId) {
+        const match = item.variant_id == parentVariantId || linked == parentVariantId;
+        console.log("🔍 Checking item:", item.title, "| variant:", item.variant_id, "| linked:", linked, "| match:", match);
+        if (match) {
           updates[item.key] = 0;
           console.log("🧹 Marking for removal →", item.key + ":", item.title);
         }
@@ -77,26 +83,8 @@ document.addEventListener("DOMContentLoaded", function () {
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ updates })
         });
-
-        // Wait for cart.js to reflect the removal
-        console.log("⏳ Waiting for cart to reflect updates...");
-        let verified = false;
-        for (let i = 0; i < 10; i++) {
-          const refreshedCart = await fetch('/cart.js').then(r => r.json());
-          const stillExists = refreshedCart.items.some(item =>
-            item.variant_id === parentVariantId || item.properties?.['Linked to Saree'] == parentVariantId
-          );
-          if (!stillExists) {
-            console.log("✅ Cart cleaned, no old items found");
-            verified = true;
-            break;
-          }
-          await new Promise(r => setTimeout(r, 200));
-        }
-
-        if (!verified) {
-          console.warn("⚠️ Old items still present after waiting. Proceeding anyway.");
-        }
+        console.log("✅ Old instances removed. Waiting briefly...");
+        await new Promise(res => setTimeout(res, 200));
       } else {
         console.log("✅ No old instances to remove.");
       }
@@ -106,10 +94,10 @@ document.addEventListener("DOMContentLoaded", function () {
 
     injectAddonInputs();
     console.log("🚀 Submitting final form");
-    atcForm.submit(); // Proceed now
+    atcForm.submit();
   });
 
-  // Fallback injection if theme handles ATC on button click
+  // Fallback in case theme intercepts button instead of submit
   atcButton?.addEventListener("click", function () {
     console.log("🖱️ Button clicked, injecting add-ons");
     injectAddonInputs();
