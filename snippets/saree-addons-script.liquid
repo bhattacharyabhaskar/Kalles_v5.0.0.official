@@ -143,13 +143,16 @@ document.addEventListener("DOMContentLoaded", function () {
         }
       ];
 
-      const addRes = await fetch("/cart/add.js", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ items: itemsToAdd })
+      await new Promise((resolve, reject) => {
+        Shopify.addItems(itemsToAdd, function(cart) {
+          console.log("✅ Items added via Shopify.addItems:", cart);
+          resolve(cart);
+        }, function(err) {
+          console.error("❌ Shopify.addItems failed", err);
+          reject(err);
+        });
       });
 
-      if (!addRes.ok) throw new Error("❌ Failed to add items");
 
       document.dispatchEvent(new CustomEvent("cart:refresh", { bubbles: true }));
 
