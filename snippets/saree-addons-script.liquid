@@ -1,77 +1,83 @@
 <script>
-document.addEventListener("DOMContentLoaded", function () {
-  const atcButton = document.querySelector('form[action="/cart/add"] button[type="submit"]');
-  if (atcButton) {
-    atcButton.addEventListener("click", handleAddToCart);
-    console.log("✅ Bound custom handleAddToCart to button");
-  } else {
-    console.warn("❌ ATC button not found");
-  }
-});
-
 async function handleAddToCart(e) {
-  console.log("🛒 Add to Cart triggered...");
   e.preventDefault();
+  console.log("🛒 Add to Cart triggered...");
 
   const submitBtn = e.currentTarget;
   submitBtn.disabled = true;
+  submitBtn.innerText = 'Adding...';
 
-  const spinner = submitBtn.querySelector('.hdt-loading__spinner');
-  const btnText = submitBtn.querySelector('.hdt-btn-atc_text');
-  if (spinner) spinner.removeAttribute('hidden');
-  if (btnText) btnText.textContent = 'Adding...';
-
-  // ✅ Get selected variant from the form
-  const variantInput = document.querySelector('form[action="/cart/add"] input[name="id"]');
-  const parentVariantId = variantInput?.value;
+  // 1. Try to get parent variant ID safely
+  const variantInput = document.querySelector('form[action="/cart/add"] input[name="id"], input[name="variant"], input[name="variant_id"]');
+  const parentVariantId = variantInput?.value || window?.product?.selected_or_first_available_variant?.id;
 
   if (!parentVariantId) {
     alert("Variant not found");
+    console.warn("❌ Could not determine parentVariantId", { variantInput, windowProduct: window.product });
+    submitBtn.disabled = false;
+    submitBtn.innerText = 'Add to Cart';
     return;
   }
 
-  // ✅ Get selected add-ons
-  const addonItems = Array.from(document.querySelectorAll('.addon-checkbox:checked'))
-    .map(cb => {
-      const variantId = cb.getAttribute('data-variant-id');
-      return variantId ? {
-        id: parseInt(variantId),
-        quantity: 1,
-        properties: {
-          "Linked to Saree": parentVariantId
-        }
-      } : null;
-    })
-    .filter(Boolean);
-
-  const mainItem = {
-    id: parseInt(parentVariantId),
-    quantity: 1
-  };
-
-  const items = [mainItem, ...addonItems];
-
   console.log("✔️ Parent Variant ID:", parentVariantId);
+
+  // 2. Collect checked add-ons
+  const addonCheckboxes = Array.from(document.querySelectorAll('.addon-checkbox:checked'));
+  const addonItems = addonCheckboxes.map(cb => {
+    const variantId = cb.getAttribute('data-variant-id');
+    return variantId ? {
+      id: parseInt(variantId),
+      quantity: 1,
+      properties: {
+        "Linked to Saree": parentVariantId
+      }
+    } : null;
+  }).filter(Boolean);
+
   console.log("➕ Addon Items:", addonItems);
+
+  // 3. Build final items array
+  const items = [
+    { id: parseInt(parentVariantId), quantity: 1 },
+    ...addonItems
+  ];
+
   console.log("📦 Final items array:", items);
 
   try {
     const res = await fetch('/cart/add.js', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: {
+        'Content-Type': 'application/json'
+      },
       body: JSON.stringify({ items })
     });
 
-    if (!res.ok) throw new Error("Failed to add to cart");
+    if (!res.ok) throw new Error("❌ Failed to add to cart");
 
-    document.dispatchEvent(new CustomEvent("cart:refresh"));
+    console.log("✅ Items successfully added");
+
+    // 4. Refresh cart and open drawer
+    document.dispatchEvent(new CustomEvent("cart:refresh")); // for custom Kalles logic
+    document.dispatchEvent(new CustomEvent("hdt:open-drawer", { detail: { id: "cart" } }));
+
   } catch (err) {
     console.error("❌ Add to cart failed", err);
     alert("Something went wrong. Please try again.");
   } finally {
     submitBtn.disabled = false;
-    if (spinner) spinner.setAttribute('hidden', '');
-    if (btnText) btnText.textContent = 'Add to cart';
+    submitBtn.innerText = 'Add to Cart';
   }
 }
+
+// Attach to button if not using Liquid 'onclick'
+document.addEventListener('DOMContentLoaded', () => {
+  const btn = document.querySelector('button[name="add"]');
+  if (btn) {
+    btn.addEventListener('click', handleAddToCart);
+    console.log("✅ Bound custom handleAddToCart to button");
+  } else {
+    console.warn("❌ No Add to Cart button found");
+  }
+});
 </script>
