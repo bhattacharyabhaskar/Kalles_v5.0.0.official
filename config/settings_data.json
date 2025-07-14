@@ -92,7 +92,7 @@
     "hidden_compare": false,
     "pick_mode": "first_available",
     "hide_sold_out": false,
-    "action_after_atc": "go_cart_page",
+    "action_after_atc": "open_cart_drawer",
     "empty_cart_link": "shopify://collections/buy-silk-mark-certified-saree",
     "free_ship_pr": "white-cream-sleeve",
     "gift_wrap_pr": "gift-wrap",
