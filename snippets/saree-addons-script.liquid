@@ -1,145 +1,114 @@
 <script>
 document.addEventListener("DOMContentLoaded", function () {
-  const atcForm = document.querySelector('form[action="/cart/add"]');
-  if (!atcForm) {
-    console.warn("🧩 No ATC form found");
-    return;
-  }
+  const atcButton = document.querySelector('.ivy-addons-atc-btn');
+  const atcForm = document.querySelector('form.t4s-form__product');
 
-  const atcButton = atcForm.querySelector('button[type="submit"]');
-  const debugPrefix = "🧩 ADDON:";
+  if (!atcButton || !atcForm) return;
 
-  function removeOldAddonInputs() {
-    atcForm.querySelectorAll(".addon-dynamic").forEach(el => el.remove());
-    console.log(`${debugPrefix} Removed old hidden addon inputs`);
-  }
-
-  function injectAddonInputs() {
-    removeOldAddonInputs();
-    const selected = document.querySelectorAll(".addon-checkbox:checked");
-
-    console.log(`📦 Add-ons selected: ${selected.length}`);
-
-    selected.forEach((checkbox) => {
-      const variantId = checkbox.dataset.variantId;
-      if (!variantId) return;
-      console.log(`${debugPrefix} Injecting addon variant ${variantId}`);
-
-      const idInput = document.createElement("input");
-      idInput.type = "hidden";
-      idInput.name = "items[][id]";
-      idInput.value = variantId;
-      idInput.classList.add("addon-dynamic");
-
-      const qtyInput = document.createElement("input");
-      qtyInput.type = "hidden";
-      qtyInput.name = "items[][quantity]";
-      qtyInput.value = "1";
-      qtyInput.classList.add("addon-dynamic");
-
-      atcForm.appendChild(idInput);
-      atcForm.appendChild(qtyInput);
-    });
-  }
-
-  async function removeDuplicateItems(callback) {
-    console.log("🧹 Checking cart for duplicates...");
-
-    const res = await fetch('/cart.js');
-    const cart = await res.json();
-    const parentVariantId = window.product?.selected_or_first_available_variant?.id;
-
-    if (!parentVariantId) {
-      console.warn("⚠️ Could not determine parent variant ID.");
-      callback();
-      return;
-    }
-
-    console.log(`🧩 Parent Variant ID to remove: ${parentVariantId}`);
-
-    const itemsToRemove = [];
-
-    cart.items.forEach(item => {
-      const linked = item.properties?.['Linked to Saree'];
-      const match = (linked == parentVariantId || item.variant_id == parentVariantId);
-
-      console.log(`🔍 Checking item: ${item.product_title} | variant: ${item.variant_id} | linked: ${linked} | match: ${match}`);
-
-      if (match) {
-        console.log(`🧹 Marking for removal → ${item.key}: ${item.product_title}`);
-        itemsToRemove.push({ id: item.key, quantity: 0 });
-      }
-    });
-
-    if (itemsToRemove.length > 0) {
-      console.log("🔁 Sending update.js call to remove duplicates...");
-      await fetch('/cart/update.js', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ updates: Object.fromEntries(itemsToRemove.map(i => [i.id, 0])) })
-      });
-      console.log("✅ Old instances removed. Waiting briefly...");
-      setTimeout(callback, 300); // wait before adding new items
-    } else {
-      console.log("✅ No old instances to remove.");
-      callback();
-    }
-  }
-
-  function finalSubmitHandler(e) {
+  atcButton.addEventListener('click', function (e) {
     e.preventDefault();
-    console.log("🖱️ Button clicked, injecting add-ons");
+    console.log('🖱️ Button clicked, injecting add-ons');
 
-    injectAddonInputs();
+    // Clean old hidden addon inputs
+    atcForm.querySelectorAll('.ivy-hidden-addon').forEach(el => el.remove());
+    console.log('🧩 ADDON: Removed old hidden addon inputs');
 
-    removeDuplicateItems(() => {
+    // Gather selected add-ons
+    const selectedAddons = Array.from(document.querySelectorAll('.ivy-upsell-checkbox:checked'))
+      .map(cb => cb.getAttribute('data-variant-id'));
+    console.log(`📦 Add-ons selected: ${selectedAddons.length}`);
+
+    selectedAddons.forEach(variantId => {
+      console.log('🧩 ADDON: Injecting addon variant', variantId);
+      const input = document.createElement('input');
+      input.type = 'hidden';
+      input.name = 'properties[Linked Addon Variant ID]';
+      input.value = variantId;
+      input.className = 'ivy-hidden-addon';
+      atcForm.appendChild(input);
+    });
+
+    // Remove old instances of the parent or its add-ons
+    removeDuplicateItems(function () {
       const formData = new FormData(atcForm);
-
       fetch('/cart/add.js', {
         method: 'POST',
         body: formData
       })
-        .then(res => res.json())
-        .then(data => {
-          console.log("✅ Items added to cart via AJAX:", data);
-
-          // ✅ Attempt to open cart drawer
-          setTimeout(() => {
-            let drawerOpened = false;
-
-            // Preferred method
-            if (window.Shopify && typeof window.Shopify.openCartDrawer === 'function') {
-              console.log("🛒 Opening drawer via Shopify.openCartDrawer()");
-              window.Shopify.openCartDrawer();
-              drawerOpened = true;
-            }
-
-            // Fallback 1: Kalles v5 (HALO)
-            else if (window.HALO && HALO.cart && typeof HALO.cart.getCart === 'function') {
-              console.log("🛒 Opening drawer via HALO.cart.getCart()");
-              HALO.cart.getCart();
-              drawerOpened = true;
-            }
-
-            // Fallback 2: Click cart icon manually
-            else {
-              const drawerToggle = document.querySelector('.js-toggle-cart-sidebar, .t4s-btn-cart, [data-cart-sidebar-toggle]');
-              if (drawerToggle) {
-                console.log("🛒 Opening drawer via simulated click");
-                drawerToggle.click();
-                drawerOpened = true;
-              }
-            }
-
-            if (!drawerOpened) {
-              console.warn("⚠️ Drawer function not found, staying on page.");
-            }
-          }, 250);
-        });
+      .then(response => {
+        if (!response.ok) throw new Error('Add to cart failed');
+        return response.json();
+      })
+      .then(item => {
+        console.log('✅ Items added to cart via AJAX:', item);
+        if (window.theme?.functions?.openCartDrawer) {
+          window.theme.functions.openCartDrawer();
+        } else {
+          console.warn('⚠️ Drawer function not found, staying on page.');
+        }
+      })
+      .catch(error => {
+        console.error('❌ Error adding to cart:', error);
+      });
     });
-  }
+  });
 
-  atcForm.addEventListener("submit", finalSubmitHandler);
-  atcButton?.addEventListener("click", finalSubmitHandler);
+  function removeDuplicateItems(callback) {
+    // Fallback-safe parent variant ID
+    let parentVariantId = window.product?.selected_or_first_available_variant?.id;
+
+    if (!parentVariantId) {
+      const fallbackInput = atcForm.querySelector('input[name="id"]');
+      if (fallbackInput) {
+        parentVariantId = fallbackInput.value;
+        console.warn("⚠️ Fallback to hidden input for parent variant ID:", parentVariantId);
+      } else {
+        console.warn("⚠️ Could not determine parent variant ID.");
+        callback();
+        return;
+      }
+    }
+    console.log('🧩 Parent Variant ID to remove:', parentVariantId);
+
+    fetch('/cart.js')
+      .then(res => res.json())
+      .then(cart => {
+        const updates = {};
+        console.log('🧹 Checking cart for duplicates...');
+
+        cart.items.forEach(item => {
+          const linkedTo = item.properties?.['Linked to Saree'];
+          const variantId = item.variant_id;
+          const key = item.key;
+          const isParent = variantId == parentVariantId;
+          const isAddon = linkedTo == parentVariantId;
+
+          console.log(`🔍 Checking item: ${item.product_title} | variant: ${variantId} | linked: ${linkedTo} | match: ${isParent || isAddon}`);
+
+          if (isParent || isAddon) {
+            updates[key] = 0;
+            console.log(`🧹 Marking for removal → ${key}: ${item.product_title}`);
+          }
+        });
+
+        if (Object.keys(updates).length === 0) {
+          console.log('✅ No old instances to remove.');
+          callback();
+          return;
+        }
+
+        console.log('🔁 Sending update.js call to remove duplicates...');
+        fetch('/cart/update.js', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ updates })
+        })
+        .then(res => res.json())
+        .then(cart => {
+          console.log('✅ Old instances removed. Waiting briefly...');
+          setTimeout(callback, 300);
+        });
+      });
+  }
 });
 </script>
