@@ -1,62 +1,70 @@
 <script>
-async function handleAddToCart(e) {
-  console.log("🚀 Add to Cart Triggered");
+document.addEventListener("DOMContentLoaded", function () {
+  async function handleAddToCart(e) {
+    console.log("🚀 Add to Cart Triggered");
 
-  e.preventDefault();
+    e.preventDefault();
 
-  const submitBtn = e.currentTarget;
-  submitBtn.disabled = true;
-  submitBtn.innerText = 'Adding...';
+    const submitBtn = e.currentTarget;
+    submitBtn.disabled = true;
+    submitBtn.innerText = 'Adding...';
 
-  const parentVariantId = window?.product?.selected_or_first_available_variant?.id?.toString();
-  if (!parentVariantId) {
-    alert("Variant not found");
-    return;
+    const parentVariantId = window?.product?.selected_or_first_available_variant?.id?.toString();
+    if (!parentVariantId) {
+      alert("Variant not found");
+      return;
+    }
+
+    const addonItems = Array.from(document.querySelectorAll('.addon-checkbox:checked'))
+      .map(cb => {
+        const variantId = cb.getAttribute('data-variant-id');
+        return variantId ? {
+          id: parseInt(variantId),
+          quantity: 1,
+          properties: {
+            "Linked to Saree": parentVariantId
+          }
+        } : null;
+      })
+      .filter(Boolean);
+
+    const mainItem = {
+      id: parseInt(parentVariantId),
+      quantity: 1
+    };
+
+    const itemsToAdd = [mainItem, ...addonItems];
+
+    console.log("🧩 Add-on Items:", addonItems);
+    console.log("📦 Final itemsToAdd array:", itemsToAdd);
+
+    try {
+      const res = await fetch('/cart/add.js', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ items: itemsToAdd })
+      });
+
+      if (!res.ok) throw new Error("Failed to add to cart");
+
+      document.dispatchEvent(new CustomEvent("cart:refresh"));
+    } catch (err) {
+      console.error("❌ Add to cart failed", err);
+      alert("Something went wrong. Please try again.");
+    } finally {
+      submitBtn.disabled = false;
+      submitBtn.innerText = 'Add to Cart';
+    }
   }
 
-  // Find checked add-ons
-  const addonItems = Array.from(document.querySelectorAll('.addon-checkbox:checked'))
-    .map(cb => {
-      const variantId = cb.getAttribute('data-variant-id');
-      return variantId ? {
-        id: parseInt(variantId),
-        quantity: 1,
-        properties: {
-          "Linked to Saree": parentVariantId
-        }
-      } : null;
-    })
-    .filter(Boolean);
-
-  // Main product
-  const mainItem = {
-    id: parseInt(parentVariantId),
-    quantity: 1
-  };
-
-  const itemsToAdd = [mainItem, ...addonItems];
-
-  console.log("🧩 Add-on Items:", addonItems);
-  console.log("📦 Final itemsToAdd array:", itemsToAdd);
-
-  try {
-    const res = await fetch('/cart/add.js', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify({ items: itemsToAdd })
-    });
-
-    if (!res.ok) throw new Error("Failed to add to cart");
-
-    document.dispatchEvent(new CustomEvent("cart:refresh")); // Trigger drawer
-  } catch (err) {
-    console.error("❌ Add to cart failed", err);
-    alert("Something went wrong. Please try again.");
-  } finally {
-    submitBtn.disabled = false;
-    submitBtn.innerText = 'Add to Cart';
+  // Attach listener to actual button
+  const submitBtn = document.querySelector('button[type="submit"]');
+  if (submitBtn) {
+    submitBtn.addEventListener("click", handleAddToCart);
+  } else {
+    console.warn("❌ No submit button found to bind handleAddToCart");
   }
-}
+});
 </script>
