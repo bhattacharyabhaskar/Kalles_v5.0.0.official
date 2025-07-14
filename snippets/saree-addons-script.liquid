@@ -1,6 +1,6 @@
 <script>
 async function handleAddToCart(e) {
-      console.log("INITIALIZE"));
+  console.log("🚀 Add to Cart Triggered");
 
   e.preventDefault();
 
@@ -34,21 +34,23 @@ async function handleAddToCart(e) {
     quantity: 1
   };
 
-  const items = [mainItem, ...addonItems];
+  const itemsToAdd = [mainItem, ...addonItems];
+
+  console.log("🧩 Add-on Items:", addonItems);
+  console.log("📦 Final itemsToAdd array:", itemsToAdd);
 
   try {
-console.log("🧩 Variant IDs being added:", checkedAddons);
-console.log("📦 Final itemsToAdd array:", itemsToAdd);    const res = await fetch('/cart/add.js', {
+    const res = await fetch('/cart/add.js', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json'
       },
-      body: JSON.stringify({ items })
+      body: JSON.stringify({ items: itemsToAdd })
     });
 
     if (!res.ok) throw new Error("Failed to add to cart");
 
-    document.dispatchEvent(new CustomEvent("cart:refresh")); // will trigger drawer
+    document.dispatchEvent(new CustomEvent("cart:refresh")); // Trigger drawer
   } catch (err) {
     console.error("❌ Add to cart failed", err);
     alert("Something went wrong. Please try again.");
