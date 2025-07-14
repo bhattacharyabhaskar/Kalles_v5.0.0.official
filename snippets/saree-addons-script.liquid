@@ -40,7 +40,15 @@ document.addEventListener("DOMContentLoaded", function () {
       atcForm.appendChild(qtyInput);
     });
   }
-
+try {
+      const cart = await fetch('/cart.js').then(res => res.json());
+      const updates = {};
+      cart.items.forEach(item => {
+        const linked = item.properties?.['Linked to Saree'];
+        if (item.variant_id == parentVariantId || linked == parentVariantId) {
+          updates[item.key] = 0;
+        }
+      });
   // Inject just before submit
   atcForm.addEventListener("submit", function () {
     injectAddonInputs();
