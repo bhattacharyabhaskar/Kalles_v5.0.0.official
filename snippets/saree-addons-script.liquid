@@ -10,6 +10,7 @@ document.addEventListener("DOMContentLoaded", function () {
   const debugPrefix = "🧩 ADDON:";
 
   function removeOldAddonInputs() {
+    console.log(`${debugPrefix} Removing old hidden addon inputs`);
     atcForm.querySelectorAll(".addon-dynamic").forEach(el => el.remove());
   }
 
@@ -18,8 +19,6 @@ document.addEventListener("DOMContentLoaded", function () {
     const selected = document.querySelectorAll(".addon-checkbox:checked");
 
     console.log(`📦 Add-ons selected: ${selected.length}`);
-    
-
     selected.forEach((checkbox) => {
       const variantId = checkbox.dataset.variantId;
       if (!variantId) return;
@@ -41,8 +40,8 @@ document.addEventListener("DOMContentLoaded", function () {
       atcForm.appendChild(qtyInput);
     });
   }
-  // Inject just before submit
-    atcForm.addEventListener("submit", async function (e) {
+
+  atcForm.addEventListener("submit", async function (e) {
     e.preventDefault(); // Stop auto submission
 
     const parentVariantId =
@@ -58,38 +57,48 @@ document.addEventListener("DOMContentLoaded", function () {
     }
 
     try {
+      console.log("🧹 Checking cart for duplicates...");
       const cart = await fetch('/cart.js').then(res => res.json());
       const updates = {};
       cart.items.forEach(item => {
         const linked = item.properties?.['Linked to Saree'];
         if (item.variant_id == parentVariantId || linked == parentVariantId) {
           updates[item.key] = 0;
-          console.log("🧹 Removing from cart:", item.title);
+          console.log(`🧹 Marking for removal → ${item.key}: ${item.title}`);
         }
       });
 
       if (Object.keys(updates).length > 0) {
-        console.log("🔁 Updating cart to remove duplicates...");
+        console.log("🔁 Sending update.js call to remove duplicates...");
         await fetch('/cart/update.js', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ updates })
         });
-        await new Promise(res => setTimeout(res, 200)); // slight delay
+        console.log("✅ Old instances removed. Waiting briefly...");
+        await new Promise(res => setTimeout(res, 300));
       } else {
-        console.log("✅ No duplicates found");
+        console.log("✅ No old instances to remove.");
       }
     } catch (err) {
-      console.error("❌ Error cleaning cart:", err);
+      console.error("❌ Error during cart cleanup:", err);
     }
 
     injectAddonInputs();
-    atcForm.submit(); // ✅ safe to submit now
+
+    // ✅ Force cart drawer, prevent redirect
+    console.log("🚫 Overriding theme redirect behavior (drawer only)");
+    window.theme = window.theme || {};
+    window.theme.settings = window.theme.settings || {};
+    window.theme.settings.actionAfterATC = "open_cart_drawer";
+
+    console.log("🚀 Submitting final form");
+    atcForm.submit(); // ✅ safe to submit
   });
 
-
-  // Also hook on button click to ensure injection happens in case theme JS takes over
+  // Fallback: Handle click to make sure injection happens
   atcButton?.addEventListener("click", function () {
+    console.log("🖱️ ATC button clicked, preparing form...");
     injectAddonInputs();
   });
 });
