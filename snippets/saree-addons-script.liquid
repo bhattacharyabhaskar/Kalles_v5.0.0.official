@@ -18,14 +18,7 @@ document.addEventListener("DOMContentLoaded", function () {
     const selected = document.querySelectorAll(".addon-checkbox:checked");
 
     console.log(`📦 Add-ons selected: ${selected.length}`);
-    try {
-      const cart = await fetch('/cart.js').then(res => res.json());
-      const updates = {};
-      cart.items.forEach(item => {
-        const linked = item.properties?.['Linked to Saree'];
-        if (item.variant_id == parentVariantId || linked == parentVariantId) {
-          updates[item.key] = 0;
-      }
+    
 
     selected.forEach((checkbox) => {
       const variantId = checkbox.dataset.variantId;
