@@ -1,58 +1,54 @@
 <script>
 document.addEventListener("DOMContentLoaded", function () {
-  const form = document.querySelector('form[action="/cart/add"]');
-  const atcButton = form?.querySelector('button[type="submit"]');
-
-  if (!form || !atcButton) {
-    console.warn("❌ Main form or Add to Cart button not found");
+  const atcForm = document.querySelector('form[action="/cart/add"]');
+  if (!atcForm) {
+    console.warn("🧩 No ATC form found");
     return;
   }
 
-  // Remove any old hidden addon inputs before a new submission
-  function clearPreviousAddonInputs() {
-    const oldInputs = form.querySelectorAll('.addon-hidden-input');
-    oldInputs.forEach((input) => input.remove());
+  const atcButton = atcForm.querySelector('button[type="submit"]');
+  const debugPrefix = "🧩 ADDON:";
+
+  function removeOldAddonInputs() {
+    atcForm.querySelectorAll(".addon-dynamic").forEach(el => el.remove());
   }
 
-  // Inject selected add-ons into form before submission
-  function injectAddonsIntoForm() {
-    const checkedAddons = document.querySelectorAll('.addon-checkbox:checked');
-    console.log(`📦 Add-ons selected: ${checkedAddons.length}`);
-    clearPreviousAddonInputs();
+  function injectAddonInputs() {
+    removeOldAddonInputs();
+    const selected = document.querySelectorAll(".addon-checkbox:checked");
 
-    checkedAddons.forEach((checkbox, index) => {
+    console.log(`📦 Add-ons selected: ${selected.length}`);
+
+    selected.forEach((checkbox) => {
       const variantId = checkbox.dataset.variantId;
+      if (!variantId) return;
+      console.log(`${debugPrefix} Injecting addon variant ${variantId}`);
 
-      if (!variantId) {
-        console.warn(`⚠️ Missing variant ID on addon checkbox #${index}`);
-        return;
-      }
+      const idInput = document.createElement("input");
+      idInput.type = "hidden";
+      idInput.name = "items[][id]";
+      idInput.value = variantId;
+      idInput.classList.add("addon-dynamic");
 
-      const inputId = document.createElement("input");
-      inputId.type = "hidden";
-      inputId.name = "items[][id]";
-      inputId.value = variantId;
-      inputId.classList.add("addon-hidden-input");
-      form.appendChild(inputId);
+      const qtyInput = document.createElement("input");
+      qtyInput.type = "hidden";
+      qtyInput.name = "items[][quantity]";
+      qtyInput.value = "1";
+      qtyInput.classList.add("addon-dynamic");
 
-      const inputQty = document.createElement("input");
-      inputQty.type = "hidden";
-      inputQty.name = "items[][quantity]";
-      inputQty.value = 1;
-      inputQty.classList.add("addon-hidden-input");
-      form.appendChild(inputQty);
-
-      console.log(`✅ Injected addon variant ${variantId}`);
+      atcForm.appendChild(idInput);
+      atcForm.appendChild(qtyInput);
     });
-
-    if (checkedAddons.length > 0) {
-      console.log("✅ Properties injected, form will POST normally");
-    }
   }
 
-  // Attach listener to inject add-ons before the form submission
-  form.addEventListener("submit", function (e) {
-    injectAddonsIntoForm();
+  // Inject just before submit
+  atcForm.addEventListener("submit", function () {
+    injectAddonInputs();
+  });
+
+  // Also hook on button click to ensure injection happens in case theme JS takes over
+  atcButton?.addEventListener("click", function () {
+    injectAddonInputs();
   });
 });
 </script>
