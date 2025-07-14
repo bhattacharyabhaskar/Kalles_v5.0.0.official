@@ -1,114 +1,138 @@
 <script>
 document.addEventListener("DOMContentLoaded", function () {
-  const atcButton = document.querySelector('.ivy-addons-atc-btn');
-  const atcForm = document.querySelector('form.t4s-form__product');
+  const atcForm = document.querySelector('form[action="/cart/add"]');
+  if (!atcForm) {
+    console.warn("🧩 No ATC form found");
+    return;
+  }
 
-  if (!atcButton || !atcForm) return;
+  const atcButton = atcForm.querySelector('button[type="submit"]');
+  const debugPrefix = "🧩 ADDON:";
 
-  atcButton.addEventListener('click', function (e) {
-    e.preventDefault();
-    console.log('🖱️ Button clicked, injecting add-ons');
+  function removeOldAddonInputs() {
+    atcForm.querySelectorAll(".addon-dynamic").forEach(el => el.remove());
+    console.log("🧩 ADDON: Removed old hidden addon inputs");
+  }
 
-    // Clean old hidden addon inputs
-    atcForm.querySelectorAll('.ivy-hidden-addon').forEach(el => el.remove());
-    console.log('🧩 ADDON: Removed old hidden addon inputs');
+  function injectAddonInputs(parentVariantId) {
+    removeOldAddonInputs();
+    const selected = document.querySelectorAll(".addon-checkbox:checked");
+    console.log(`📦 Add-ons selected: ${selected.length}`);
 
-    // Gather selected add-ons
-    const selectedAddons = Array.from(document.querySelectorAll('.ivy-upsell-checkbox:checked'))
-      .map(cb => cb.getAttribute('data-variant-id'));
-    console.log(`📦 Add-ons selected: ${selectedAddons.length}`);
+    selected.forEach((checkbox) => {
+      const variantId = checkbox.dataset.variantId;
+      if (!variantId) return;
+      console.log(`${debugPrefix} Injecting addon variant ${variantId}`);
 
-    selectedAddons.forEach(variantId => {
-      console.log('🧩 ADDON: Injecting addon variant', variantId);
-      const input = document.createElement('input');
-      input.type = 'hidden';
-      input.name = 'properties[Linked Addon Variant ID]';
-      input.value = variantId;
-      input.className = 'ivy-hidden-addon';
-      atcForm.appendChild(input);
+      const idInput = document.createElement("input");
+      idInput.type = "hidden";
+      idInput.name = "items[][id]";
+      idInput.value = variantId;
+      idInput.classList.add("addon-dynamic");
+
+      const qtyInput = document.createElement("input");
+      qtyInput.type = "hidden";
+      qtyInput.name = "items[][quantity]";
+      qtyInput.value = "1";
+      qtyInput.classList.add("addon-dynamic");
+
+      const propInput = document.createElement("input");
+      propInput.type = "hidden";
+      propInput.name = "items[][properties][Linked to Saree]";
+      propInput.value = parentVariantId;
+      propInput.classList.add("addon-dynamic");
+
+      atcForm.appendChild(idInput);
+      atcForm.appendChild(qtyInput);
+      atcForm.appendChild(propInput);
     });
+  }
 
-    // Remove old instances of the parent or its add-ons
-    removeDuplicateItems(function () {
-      const formData = new FormData(atcForm);
-      fetch('/cart/add.js', {
-        method: 'POST',
-        body: formData
-      })
-      .then(response => {
-        if (!response.ok) throw new Error('Add to cart failed');
-        return response.json();
-      })
-      .then(item => {
-        console.log('✅ Items added to cart via AJAX:', item);
-        if (window.theme?.functions?.openCartDrawer) {
-          window.theme.functions.openCartDrawer();
-        } else {
-          console.warn('⚠️ Drawer function not found, staying on page.');
-        }
-      })
-      .catch(error => {
-        console.error('❌ Error adding to cart:', error);
-      });
-    });
-  });
+  atcForm.addEventListener("submit", async function (e) {
+    e.preventDefault(); // prevent normal submission
+    console.log("🖱️ ATC button clicked, preparing form...");
 
-  function removeDuplicateItems(callback) {
-    // Fallback-safe parent variant ID
-    let parentVariantId = window.product?.selected_or_first_available_variant?.id;
+    const parentVariantId =
+      window.product?.selected_or_first_available_variant?.id ||
+      window.meta?.product?.variants?.[0]?.id ||
+      ShopifyAnalytics?.meta?.selectedVariantId;
 
     if (!parentVariantId) {
-      const fallbackInput = atcForm.querySelector('input[name="id"]');
-      if (fallbackInput) {
-        parentVariantId = fallbackInput.value;
-        console.warn("⚠️ Fallback to hidden input for parent variant ID:", parentVariantId);
-      } else {
-        console.warn("⚠️ Could not determine parent variant ID.");
-        callback();
-        return;
-      }
+      console.warn("⚠️ Parent Variant ID not found");
+      return;
     }
-    console.log('🧩 Parent Variant ID to remove:', parentVariantId);
+    console.log(`🧩 Parent Variant ID to remove: ${parentVariantId}`);
 
-    fetch('/cart.js')
-      .then(res => res.json())
-      .then(cart => {
-        const updates = {};
-        console.log('🧹 Checking cart for duplicates...');
+    // Step 1: Clean old items from cart
+    try {
+      console.log("🧹 Checking cart for duplicates...");
+      const cart = await fetch('/cart.js').then(res => res.json());
+      const updates = {};
 
-        cart.items.forEach(item => {
-          const linkedTo = item.properties?.['Linked to Saree'];
-          const variantId = item.variant_id;
-          const key = item.key;
-          const isParent = variantId == parentVariantId;
-          const isAddon = linkedTo == parentVariantId;
-
-          console.log(`🔍 Checking item: ${item.product_title} | variant: ${variantId} | linked: ${linkedTo} | match: ${isParent || isAddon}`);
-
-          if (isParent || isAddon) {
-            updates[key] = 0;
-            console.log(`🧹 Marking for removal → ${key}: ${item.product_title}`);
-          }
-        });
-
-        if (Object.keys(updates).length === 0) {
-          console.log('✅ No old instances to remove.');
-          callback();
-          return;
+      cart.items.forEach(item => {
+        const linked = item.properties?.['Linked to Saree'];
+        const match = item.variant_id == parentVariantId || linked == parentVariantId;
+        console.log(`🔍 Checking item: ${item.title} | variant: ${item.variant_id} | linked: ${linked} | match: ${match}`);
+        if (match) {
+          updates[item.key] = 0;
+          console.log(`🧹 Marking for removal → ${item.key}: ${item.title}`);
         }
+      });
 
-        console.log('🔁 Sending update.js call to remove duplicates...');
-        fetch('/cart/update.js', {
+      if (Object.keys(updates).length > 0) {
+        console.log("🔁 Sending update.js call to remove duplicates...");
+        await fetch('/cart/update.js', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ updates })
-        })
-        .then(res => res.json())
-        .then(cart => {
-          console.log('✅ Old instances removed. Waiting briefly...');
-          setTimeout(callback, 300);
         });
+        console.log("✅ Old instances removed. Waiting briefly...");
+        await new Promise(res => setTimeout(res, 300));
+      } else {
+        console.log("✅ No old instances to remove.");
+      }
+    } catch (err) {
+      console.error("❌ Error cleaning cart:", err);
+    }
+
+    // Step 2: Inject and submit with new items
+    injectAddonInputs(parentVariantId);
+
+    const formData = new FormData(atcForm);
+
+    try {
+      const response = await fetch('/cart/add.js', {
+        method: 'POST',
+        body: formData,
+        headers: { 'Accept': 'application/json' }
       });
-  }
+
+      const result = await response.json();
+      console.log("✅ Items added to cart via AJAX:", result);
+
+      // Step 3: Open the drawer if supported
+      if (window.Shopify && typeof window.Shopify.openCartDrawer === 'function') {
+        window.Shopify.openCartDrawer();
+        console.log("🛒 Drawer opened");
+      } else {
+        console.warn("⚠️ Drawer function not found, staying on page.");
+      }
+    } catch (err) {
+      console.error("❌ Error adding items to cart:", err);
+    }
+  });
+
+  // Also handle ATC button click in case theme interferes
+  atcButton?.addEventListener("click", function () {
+    console.log("🖱️ Button clicked, injecting add-ons");
+    const parentVariantId =
+      window.product?.selected_or_first_available_variant?.id ||
+      window.meta?.product?.variants?.[0]?.id ||
+      ShopifyAnalytics?.meta?.selectedVariantId;
+
+    if (!parentVariantId) return;
+
+    injectAddonInputs(parentVariantId);
+  });
 });
 </script>
