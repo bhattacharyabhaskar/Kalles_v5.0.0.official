@@ -76,7 +76,6 @@
             "custom_liquid_inMpAD": {
               "type": "custom-liquid",
               "name": "ADD-ON",
-              "disabled": true,
               "settings": {
                 "custom_liquid": "<!-- ✅ BEGIN SPECIAL SAREE ADD ON SECTION  -->\n                  {% if product.type == \"Saree\" %}\n                     {% render 'saree-addons', fabric_type: product.metafields.saree.fabric_type, blouse_piece_value: product.metafields.saree.BlousePiece %}\n                    {% render 'saree-addons-script' %}\n                  {% endif %}\n                  <!-- ✅ END SPECIAL SAREE ADD ON SECTION  -->"
               },
