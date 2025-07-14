@@ -144,14 +144,19 @@ document.addEventListener("DOMContentLoaded", function () {
       ];
 
       await new Promise((resolve, reject) => {
-        Shopify.addItems(itemsToAdd, function(cart) {
-          console.log("✅ Items added via Shopify.addItems:", cart);
-          resolve(cart);
-        }, function(err) {
-          console.error("❌ Shopify.addItems failed", err);
+        window.HDT?.ajaxAPI?.addToCart({
+          items: itemsToAdd,
+          sections: "cart_data,mini_cart",
+          sections_url: window.location.pathname
+        }).then((res) => {
+          console.log("✅ Items added via HDT.ajaxAPI:", res);
+          resolve(res);
+        }).catch((err) => {
+          console.error("❌ HDT.ajaxAPI.addToCart failed", err);
           reject(err);
         });
       });
+
 
 
       document.dispatchEvent(new CustomEvent("cart:refresh", { bubbles: true }));
