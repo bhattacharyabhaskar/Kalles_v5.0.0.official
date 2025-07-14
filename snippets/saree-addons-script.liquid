@@ -21,12 +21,16 @@ async function handleAddToCart(e) {
   if (spinner) spinner.removeAttribute('hidden');
   if (btnText) btnText.textContent = 'Adding...';
 
-  const parentVariantId = window?.product?.selected_or_first_available_variant?.id?.toString();
+  // ✅ Get selected variant from the form
+  const variantInput = document.querySelector('form[action="/cart/add"] input[name="id"]');
+  const parentVariantId = variantInput?.value;
+
   if (!parentVariantId) {
     alert("Variant not found");
     return;
   }
 
+  // ✅ Get selected add-ons
   const addonItems = Array.from(document.querySelectorAll('.addon-checkbox:checked'))
     .map(cb => {
       const variantId = cb.getAttribute('data-variant-id');
@@ -60,7 +64,7 @@ async function handleAddToCart(e) {
 
     if (!res.ok) throw new Error("Failed to add to cart");
 
-    document.dispatchEvent(new CustomEvent("cart:refresh")); // Trigger drawer/cart update
+    document.dispatchEvent(new CustomEvent("cart:refresh"));
   } catch (err) {
     console.error("❌ Add to cart failed", err);
     alert("Something went wrong. Please try again.");
