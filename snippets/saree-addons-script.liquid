@@ -10,8 +10,9 @@ document.addEventListener("DOMContentLoaded", function () {
 
   if (!form || !submitButton || !parentVariantId) return;
 
-  // Clone Floating Button
+  // Create floating ATC button
   const floatingBtn = submitButton.cloneNode(true);
+  floatingBtn.removeAttribute("id");
   floatingBtn.id = "floating-atc-btn";
   floatingBtn.textContent = submitButton.textContent;
 
@@ -44,7 +45,6 @@ document.addEventListener("DOMContentLoaded", function () {
 
   document.body.appendChild(floatingBtn);
 
-  // Floating ATC Toggle
   function toggleFloatingButton() {
     const isMobile = window.innerWidth <= 767;
     if (!isMobile) {
@@ -58,6 +58,7 @@ document.addEventListener("DOMContentLoaded", function () {
     floatingBtn.style.display = (!isInViewport && window.scrollY > 300) ? "flex" : "none";
   }
 
+  // Throttled scroll listener
   let scrollTimeout;
   window.addEventListener("scroll", () => {
     if (!scrollTimeout) {
@@ -68,7 +69,6 @@ document.addEventListener("DOMContentLoaded", function () {
     }
   });
 
-  // Update Button Text
   function updateATCButtonText() {
     const anyChecked = document.querySelectorAll('.addon-checkbox:checked').length > 0;
     const label = anyChecked ? 'Add to Cart with Add-ons' : 'Add to Cart';
@@ -76,7 +76,7 @@ document.addEventListener("DOMContentLoaded", function () {
     floatingBtn.innerText = label;
   }
 
-  // Add-on Box Toggle Behavior
+  // Make entire add-on box toggle checkbox
   document.querySelectorAll('.js-addon-box').forEach(box => {
     const checkbox = box.querySelector('.addon-checkbox');
 
@@ -95,22 +95,18 @@ document.addEventListener("DOMContentLoaded", function () {
     });
   });
 
-  // 🛒 Custom Add to Cart Logic
-  async function handleAddonAddToCart(e) {
+  async function handleAddToCart(e) {
     e.preventDefault();
     e.stopPropagation();
-
-    const checkedAddons = Array.from(document.querySelectorAll('.addon-checkbox:checked'))
-      .map(cb => cb.getAttribute('data-variant-id'))
-      .filter(Boolean);
-
-    // If no addons selected, let default theme ATC handle it
-    if (checkedAddons.length === 0) return;
 
     submitButton.disabled = true;
     floatingBtn.disabled = true;
     submitButton.innerText = 'Adding...';
     floatingBtn.innerText = 'Adding...';
+
+    const checkedAddons = Array.from(document.querySelectorAll('.addon-checkbox:checked'))
+      .map(cb => cb.getAttribute('data-variant-id'))
+      .filter(Boolean);
 
     try {
       const cart = await fetch('/cart.js').then(res => res.json());
@@ -133,7 +129,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
       const itemsToAdd = [
         ...checkedAddons.map(id => ({
-          id: id,
+          id,
           quantity: 1,
           properties: { "Linked to Saree": parentVariantId }
         })),
@@ -143,28 +139,18 @@ document.addEventListener("DOMContentLoaded", function () {
         }
       ];
 
-      await new Promise((resolve, reject) => {
-        window.HDT?.ajaxAPI?.addToCart({
-          items: itemsToAdd,
-          sections: "cart_data,mini_cart",
-          sections_url: window.location.pathname
-        }).then((res) => {
-          console.log("✅ Items added via HDT.ajaxAPI:", res);
-          resolve(res);
-        }).catch((err) => {
-          console.error("❌ HDT.ajaxAPI.addToCart failed", err);
-          reject(err);
-        });
+      const addRes = await fetch("/cart/add.js", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ items: itemsToAdd })
       });
 
-
-
-      document.dispatchEvent(new CustomEvent("cart:refresh", { bubbles: true }));
+      if (!addRes.ok) throw new Error("❌ Failed to add items");
 
       const drawerTrigger = document.querySelector('[data-drawer-options*="cart"]');
       if (drawerTrigger) drawerTrigger.click();
-      else document.dispatchEvent(new CustomEvent("hdt:open-drawer", { detail: { id: "cart" } }));
 
+      document.dispatchEvent(new CustomEvent("cart:refresh", { bubbles: true }));
     } catch (err) {
       console.error("❌ Cart Update Error:", err);
       alert("Something went wrong. Please try again.");
@@ -175,8 +161,7 @@ document.addEventListener("DOMContentLoaded", function () {
     }
   }
 
-  submitButton.addEventListener("click", handleAddonAddToCart);
-  floatingBtn.addEventListener("click", handleAddonAddToCart);
+  submitButton.addEventListener("click", handleAddToCart);
+  floatingBtn.addEventListener("click", handleAddToCart);
 });
-
 </script>
