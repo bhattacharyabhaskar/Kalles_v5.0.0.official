@@ -35,6 +35,7 @@ async function handleAddToCart(e) {
   const items = [mainItem, ...addonItems];
 
   try {
+    console.log("🛒 Items to add:", JSON.stringify({ items: itemsToAdd }, null, 2));
     const res = await fetch('/cart/add.js', {
       method: 'POST',
       headers: {
