@@ -102,7 +102,7 @@
             "use_select_varaint_change_media": true,
             "enable_media_autoplay": false,
             "enable_video_looping": false,
-            "enable_thumb_efect": true,
+            "enable_thumb_efect": false,
             "image_ratio": "adapt_image",
             "image_size": true,
             "image_zoom": "lightbox",
