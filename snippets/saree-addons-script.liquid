@@ -43,7 +43,7 @@ document.addEventListener("DOMContentLoaded", function () {
   }
 
   atcForm.addEventListener("submit", async function (e) {
-    e.preventDefault();
+    e.preventDefault(); // Stop auto submission
     console.log("🖱️ ATC button clicked, preparing form...");
 
     const parentVariantId =
@@ -66,7 +66,7 @@ document.addEventListener("DOMContentLoaded", function () {
         const linked = item.properties?.['Linked to Saree'];
         if (item.variant_id == parentVariantId || linked == parentVariantId) {
           updates[item.key] = 0;
-          console.log(`🧹 Marking for removal → ${item.key}: ${item.title}`);
+          console.log("🧹 Marking for removal →", item.key + ":", item.title);
         }
       });
 
@@ -77,39 +77,39 @@ document.addEventListener("DOMContentLoaded", function () {
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ updates })
         });
-        console.log("✅ Old instances removed. Waiting briefly...");
-        await new Promise(res => setTimeout(res, 300));
+
+        // Wait for cart.js to reflect the removal
+        console.log("⏳ Waiting for cart to reflect updates...");
+        let verified = false;
+        for (let i = 0; i < 10; i++) {
+          const refreshedCart = await fetch('/cart.js').then(r => r.json());
+          const stillExists = refreshedCart.items.some(item =>
+            item.variant_id === parentVariantId || item.properties?.['Linked to Saree'] == parentVariantId
+          );
+          if (!stillExists) {
+            console.log("✅ Cart cleaned, no old items found");
+            verified = true;
+            break;
+          }
+          await new Promise(r => setTimeout(r, 200));
+        }
+
+        if (!verified) {
+          console.warn("⚠️ Old items still present after waiting. Proceeding anyway.");
+        }
       } else {
         console.log("✅ No old instances to remove.");
       }
     } catch (err) {
-      console.error("❌ Error during cart cleanup:", err);
+      console.error("❌ Error cleaning cart:", err);
     }
 
     injectAddonInputs();
-
-    // 🔄 Submit via AJAX instead of native form
-    const formData = new FormData(atcForm);
-    try {
-      const res = await fetch('/cart/add.js', {
-        method: 'POST',
-        body: formData,
-      });
-      const json = await res.json();
-      console.log("✅ Items added to cart via AJAX:", json);
-
-      if (window.HDT && typeof window.HDT.openCartDrawer === "function") {
-        console.log("🛒 Opening drawer via window.HDT.openCartDrawer()");
-        window.HDT.openCartDrawer();
-      } else {
-        console.warn("⚠️ Drawer function not found, staying on page.");
-      }
-    } catch (err) {
-      console.error("❌ Failed to add items via AJAX", err);
-    }
+    console.log("🚀 Submitting final form");
+    atcForm.submit(); // Proceed now
   });
 
-  // Extra safety net in case your theme takes over on button click
+  // Fallback injection if theme handles ATC on button click
   atcButton?.addEventListener("click", function () {
     console.log("🖱️ Button clicked, injecting add-ons");
     injectAddonInputs();
