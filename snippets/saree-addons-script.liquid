@@ -1,77 +1,57 @@
 <script>
 async function handleAddToCart(e) {
   e.preventDefault();
-  e.stopPropagation();
 
-  submitButton.disabled = true;
-  floatingBtn.disabled = true;
-  submitButton.innerText = 'Adding...';
-  floatingBtn.innerText = 'Adding...';
+  const submitBtn = e.currentTarget;
+  submitBtn.disabled = true;
+  submitBtn.innerText = 'Adding...';
 
-  const checkedAddons = Array.from(document.querySelectorAll('.addon-checkbox:checked'))
-    .map(cb => cb.getAttribute('data-variant-id'))
+  const parentVariantId = window?.product?.selected_or_first_available_variant?.id?.toString();
+  if (!parentVariantId) {
+    alert("Variant not found");
+    return;
+  }
+
+  // Find checked add-ons
+  const addonItems = Array.from(document.querySelectorAll('.addon-checkbox:checked'))
+    .map(cb => {
+      const variantId = cb.getAttribute('data-variant-id');
+      return variantId ? {
+        id: parseInt(variantId),
+        quantity: 1,
+        properties: {
+          "Linked to Saree": parentVariantId
+        }
+      } : null;
+    })
     .filter(Boolean);
 
+  // Main product
+  const mainItem = {
+    id: parseInt(parentVariantId),
+    quantity: 1
+  };
+
+  const items = [mainItem, ...addonItems];
+
   try {
-    // Step 1: Remove matching parent + linked add-ons
-    const cart = await fetch('/cart.js').then(res => res.json());
-    const updates = {};
-    cart.items.forEach(item => {
-      const linked = item.properties?.['Linked to Saree'];
-      if (item.variant_id == parentVariantId || linked == parentVariantId) {
-        updates[item.key] = 0;
-      }
+    const res = await fetch('/cart/add.js', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({ items })
     });
 
-    if (Object.keys(updates).length > 0) {
-      await fetch('/cart/update.js', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ updates })
-      });
-      await new Promise(res => setTimeout(res, 300));
-    }
+    if (!res.ok) throw new Error("Failed to add to cart");
 
-    // Step 2: Add parent + selected add-ons
-    const itemsToAdd = [
-      ...checkedAddons.map(id => ({
-        id,
-        quantity: 1,
-        properties: { "Linked to Saree": parentVariantId }
-      })),
-      {
-        id: parentVariantId,
-        quantity: 1
-      }
-    ];
-
-    const addRes = await fetch("/cart/add.js", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ items: itemsToAdd })
-    });
-
-    if (!addRes.ok) throw new Error("❌ Failed to add items");
-
-    // Step 3: Let theme update and open the drawer
-    const event = new CustomEvent("cart:refresh", {
-      bubbles: true,
-      detail: {
-        sections: ['cart_drawer', 'cart_icon', 'cart_data', 'mini_cart'],
-        scrollToTop: false,
-        openDrawer: true // KEY for native behavior
-      }
-    });
-    document.dispatchEvent(event);
-
+    document.dispatchEvent(new CustomEvent("cart:refresh")); // will trigger drawer
   } catch (err) {
-    console.error("❌ Cart Update Error:", err);
+    console.error("❌ Add to cart failed", err);
     alert("Something went wrong. Please try again.");
   } finally {
-    submitButton.disabled = false;
-    floatingBtn.disabled = false;
-    updateATCButtonText();
+    submitBtn.disabled = false;
+    submitBtn.innerText = 'Add to Cart';
   }
 }
-
 </script>
