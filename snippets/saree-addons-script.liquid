@@ -58,7 +58,8 @@ async function handleAddToCart(e) {
     console.log("✅ Items successfully added");
 
     // 4. Refresh cart and open drawer
-    refreshCartUI();
+    document.dispatchEvent(new CustomEvent("cart:refresh")); // for custom Kalles logic
+    document.dispatchEvent(new CustomEvent("hdt:open-drawer", { detail: { id: "cart" } }));
 
   } catch (err) {
     console.error("❌ Add to cart failed", err);
@@ -69,30 +70,14 @@ async function handleAddToCart(e) {
   }
 }
 
-// After items are successfully added...
-function refreshCartUI() {
-  console.log("🔄 Triggering cart refresh and drawer open...");
-
-  // 1. Refresh cart data & count
-  fetch('/cart.js')
-    .then(res => res.json())
-    .then(cart => {
-      // Dispatch refresh event (Kalles listens for this)
-      document.dispatchEvent(new CustomEvent("cart:refresh", { detail: cart }));
-
-      // Update cart count manually (if needed)
-      const cartCountEls = document.querySelectorAll('.hdt-cart-count');
-      cartCountEls.forEach(el => el.textContent = cart.item_count);
-      console.log("🧮 Updated cart count:", cart.item_count);
-
-      // 2. Open drawer using native trigger
-      const trigger = document.querySelector('[data-hdt-open-drawer="cart"], [data-open-drawer="cart"]');
-      if (trigger) {
-        trigger.click();
-        console.log("🛍️ Simulated click on drawer trigger");
-      } else {
-        console.warn("❌ Could not find cart drawer trigger");
-      }
-    });
-}
+// Attach to button if not using Liquid 'onclick'
+document.addEventListener('DOMContentLoaded', () => {
+  const btn = document.querySelector('button[name="add"]');
+  if (btn) {
+    btn.addEventListener('click', handleAddToCart);
+    console.log("✅ Bound custom handleAddToCart to button");
+  } else {
+    console.warn("❌ No Add to Cart button found");
+  }
+});
 </script>
