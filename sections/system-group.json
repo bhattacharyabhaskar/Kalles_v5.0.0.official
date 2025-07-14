@@ -7,7 +7,7 @@
  * made to this file may be overwritten.
  * ------------------------------------------------------------
  */
- {
+{
   "name": "t:sections.name_group.system",
   "type": "custom.system",
   "sections": {
@@ -71,13 +71,10 @@
         "show_cart_note": true,
         "show_gift_wrap": true,
         "show_shipping_estimator": true,
+        "show_cart_discount": true,
+        "discount_error_message": "Enter a valid discount code",
         "heading": "Customers also bought",
-        "product_list": [
-          "combat-hoodie",
-          "combat-dop-arm-tank",
-          "cluse-la-boheme-rose-gold",
-          "combo-t-shirt"
-        ],
+        "product_list": [],
         "replaces_products_selected": true
       }
     },
