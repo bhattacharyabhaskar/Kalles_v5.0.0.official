@@ -22,12 +22,6 @@
           "type": "tax",
           "settings": {}
         },
-        "agree_y3A6EM": {
-          "type": "agree",
-          "settings": {
-            "content": "I agree with the terms and conditions"
-          }
-        },
         "btn_cart_74AGUK": {
           "type": "btn_cart",
           "settings": {
@@ -50,6 +44,7 @@
         },
         "img_trust_zatTgB": {
           "type": "img_trust",
+          "disabled": true,
           "settings": {
             "wimg": 350,
             "svg": "visa,paypal,master,american_express,amazon_payments",
@@ -60,17 +55,16 @@
       "block_order": [
         "subtotal_hPmjgN",
         "tax_rkEdFK",
-        "agree_y3A6EM",
         "btn_cart_74AGUK",
         "btn_checkout_bcnmpT",
         "img_trust_zatTgB"
       ],
       "settings": {
         "color_scheme": "scheme-1",
-        "show_free_shipping_bar": true,
-        "show_cart_note": true,
-        "show_gift_wrap": true,
-        "show_shipping_estimator": true,
+        "show_free_shipping_bar": false,
+        "show_cart_note": false,
+        "show_gift_wrap": false,
+        "show_shipping_estimator": false,
         "show_cart_discount": true,
         "discount_error_message": "Enter a valid discount code",
         "heading": "Customers also bought",
