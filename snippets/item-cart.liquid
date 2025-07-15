@@ -117,7 +117,6 @@
 async function handleCartRemove(el) {
   const itemKey = el.dataset.itemKey;
   const linkedTo = el.dataset.linkedTo || null;
-  alert("Deleting");
   el.disabled = true;
   el.innerText = 'Deleting…';
 
