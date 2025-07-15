@@ -113,3 +113,82 @@
     </div>
   </div>
 </hdt-line-item>
+<script>
+async function handleCartRemove(el) {
+  const itemKey = el.dataset.itemKey;
+  const linkedTo = el.dataset.linkedTo || null;
+
+  el.disabled = true;
+  el.innerText = 'Deleting…';
+
+  try {
+    const cart = await fetch('/cart.js').then(res => res.json());
+
+    if (!linkedTo) {
+      const parentVariantId = el.dataset.variantId;
+      const updates = {};
+
+      cart.items.forEach(item => {
+        const key = item.key;
+        const linked = item.properties?.['Linked to Saree'];
+        if (item.variant_id == parentVariantId || linked == parentVariantId) {
+          updates[key] = 0;
+        }
+      });
+
+      console.log("🗑 Removing parent & linked addons:", updates);
+
+      await fetch('/cart/update.js', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ updates, sections: "cart_data,mini_cart" })
+      });
+
+    } else {
+      await fetch('/cart/change.js', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          id: itemKey,
+          quantity: 0,
+          sections: "cart_data,mini_cart"
+        })
+      });
+    }
+
+    document.dispatchEvent(new CustomEvent("cart:refresh", { bubbles: true }));
+  } catch (err) {
+    console.error("❌ Failed to remove:", err);
+    alert("Something went wrong. Please try again.");
+    el.disabled = false;
+    el.innerText = 'Delete';
+  }
+}
+</script>
+
+<style>
+.t4s-mini_cart__remove-btn {
+  background-color: #ffffff;
+  color: #a00000;
+  border: 1.5px solid #a00000;
+  padding: 6px 14px;
+  border-radius: 6px;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background-color 0.2s ease, color 0.2s ease;
+}
+
+.t4s-mini_cart__remove-btn:hover {
+  background-color: #a00000;
+  color: #ffffff;
+}
+
+.t4s-mini_cart__remove-btn:disabled {
+  background-color: #eee;
+  color: #aaa;
+  border-color: #ccc;
+  cursor: not-allowed;
+}
+
+</style>            
