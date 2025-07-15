@@ -116,75 +116,85 @@
   </div>
 </hdt-line-item>
 <script>
-async function handleCartRemove(el) {
-  const itemKey = el.dataset.itemKey;
-  const linkedTo = el.dataset.linkedTo || null;
-  const variantId = el.dataset.variantId;
+  async function handleCartRemove(el) {
+    const itemKey = el.dataset.itemKey;
+    const linkedTo = el.dataset.linkedTo || null;
+    const variantId = el.dataset.variantId;
 
-  console.log("🧾 handleCartRemove triggered");
-  console.log("➡️ Item key:", itemKey);
-  console.log("🔗 Linked to:", linkedTo);
-  console.log("🔢 Variant ID:", variantId);
+    console.log("🧾 handleCartRemove triggered");
+    console.log("➡️ Item key:", itemKey);
+    console.log("🔗 Linked to:", linkedTo);
+    console.log("🔢 Variant ID:", variantId);
 
-  el.disabled = true;
-  el.innerText = 'Deleting…';
+    el.disabled = true;
+    el.innerText = 'Deleting…';
 
-  try {
-    console.log("📦 Fetching current cart data...");
-    const cart = await fetch('/cart.js').then(res => res.json());
-    console.log("✅ Cart fetched:", cart);
+    try {
+      console.log("📦 Fetching current cart data...");
+      const cart = await fetch('/cart.js').then(res => res.json());
+      console.log("✅ Cart fetched:", cart);
 
-    if (!linkedTo) {
-      console.log("🧩 This is a parent item. Checking for linked add-ons...");
+      if (!linkedTo) {
+        console.log("🧩 This is a parent item. Checking for linked add-ons...");
 
-      const updates = {};
-      cart.items.forEach(item => {
-        const key = item.key;
-        const linked = item.properties?.['Linked to Saree'];
-        const isAddonLinked = linked == variantId;
-        const isParent = item.variant_id == variantId;
+        const updates = {};
+        cart.items.forEach(item => {
+          const key = item.key;
+          const linked = item.properties?.['Linked to Saree'];
+          const isAddonLinked = linked == variantId;
+          const isParent = item.variant_id == variantId;
 
-        if (isParent || isAddonLinked) {
-          console.log(`🗑 Marking for removal → Key: ${key}, Variant: ${item.variant_id}, Linked: ${linked}`);
-          updates[key] = 0;
-        }
-      });
+          if (isParent || isAddonLinked) {
+            console.log(`🗑 Marking for removal → Key: ${key}, Variant: ${item.variant_id}, Linked: ${linked}`);
+            updates[key] = 0;
+          }
+        });
 
-      console.log("📤 Sending cart update request with:", updates);
+        console.log("📤 Sending cart update request with:", updates);
 
-      await fetch('/cart/update.js', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ updates, sections: "cart_data,mini_cart" })
-      });
+        await fetch('/cart/update.js', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ updates, sections: "cart_data,mini_cart" })
+        });
 
-      console.log("✅ Cart updated with parent and add-ons removed.");
-    } else {
-      console.log("🧷 This is an add-on. Removing just this item...");
+        console.log("✅ Cart updated with parent and add-ons removed.");
+      } else {
+        console.log("🧷 This is an add-on. Removing just this item...");
 
-      await fetch('/cart/change.js', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          id: itemKey,
-          quantity: 0,
-          sections: "cart_data,mini_cart"
-        })
-      });
+        await fetch('/cart/change.js', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            id: itemKey,
+            quantity: 0,
+            sections: "cart_data,mini_cart"
+          })
+        });
 
-      console.log("✅ Add-on removed from cart.");
+        console.log("✅ Add-on removed from cart.");
+      }
+
+      console.log("🔁 Dispatching cart:refresh event...");
+      document.dispatchEvent(new CustomEvent("cart:refresh", { bubbles: true }));
+    } catch (err) {
+      console.error("❌ Failed to remove item:", err);
+      alert("Something went wrong. Please try again.");
+      el.disabled = false;
+      el.innerText = 'Delete';
     }
-
-    console.log("🔁 Dispatching cart:refresh event...");
-    document.dispatchEvent(new CustomEvent("cart:refresh", { bubbles: true }));
-  } catch (err) {
-    console.error("❌ Failed to remove item:", err);
-    alert("Something went wrong. Please try again.");
-    el.disabled = false;
-    el.innerText = 'Delete';
   }
-}
+
+  // ✅ Bind click handlers once the DOM is ready
+  document.addEventListener("DOMContentLoaded", function () {
+    document.body.addEventListener("click", function (e) {
+      if (e.target.matches(".ivy-cart-remove-btn")) {
+        handleCartRemove(e.target);
+      }
+    });
+  });
 </script>
+
 <style>
 .t4s-mini_cart__remove-btn {
   background-color: #ffffff;
