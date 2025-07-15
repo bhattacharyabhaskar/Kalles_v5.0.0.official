@@ -89,8 +89,8 @@
           {% endcomment %}
          <button
           type="button"
-          class="hdt-mini-cart__remove hdt-s-text ivy-cart-remove-btn"
-          data-item-key="{{ item_key }}"
+          class="hdt-mini-cart__remove ivy-cart-remove-btn"
+          data-item-key="{{ item.key }}"
           data-variant-id="{{ item.variant_id }}"
           {% if item.properties['Linked to Saree'] %}
             data-linked-to="{{ item.properties['Linked to Saree'] }}"
