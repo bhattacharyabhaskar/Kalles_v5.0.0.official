@@ -63,6 +63,7 @@
             },
             "product_trust_badge_QALnxQ": {
               "type": "_product-trust-badge",
+              "disabled": true,
               "settings": {
                 "mess": "",
                 "size": 10,
