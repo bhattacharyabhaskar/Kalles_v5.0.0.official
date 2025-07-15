@@ -61,9 +61,6 @@
     <wrapp-hdt-pr-frm class="hdt-contents">
       {%- form 'product', product, id: product_form_id, class: 'hdt-main-product-form', data-gift-card-recipient: gift_card_recipient_feature_active -%}
         <input type="hidden" name="id" value="{{ selected_variant.id }}"{% if variant_picker_block != blank and product.has_only_default_variant == false %} disabled{% endif %}>
-        {% if product.type == "Saree" %}
-          {% render 'saree-addons', fabric_type: product.metafields.saree.fabric_type, blouse_piece_value: product.metafields.saree.BlousePiece %}
-        {% endif %}
         {%- if gift_card_recipient_feature_active -%}
           {%- render 'gift-card-recipient-form', product: product, form: form, section: section, form_id: product_form_id -%}
         {%- endif -%}
@@ -102,6 +99,10 @@
             {%- endif -%}
           </div>
         </hdt-buy-buttons>
+        {% if product.type == "Saree" %}
+          {% render 'saree-addons', fabric_type: product.metafields.saree.fabric_type, blouse_piece_value: product.metafields.saree.BlousePiece %}
+        {% endif %}
+      
       {%- endform -%}
     </wrapp-hdt-pr-frm>
   {%- else -%}
