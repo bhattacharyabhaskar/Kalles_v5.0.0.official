@@ -111,12 +111,7 @@ document.addEventListener("DOMContentLoaded", function () {
       console.log("✅ Items added to cart via AJAX:", result);
 
       // Step 3: Open the drawer if supported
-      if (window.Shopify && typeof window.Shopify.openCartDrawer === 'function') {
-        window.Shopify.openCartDrawer();
-        console.log("🛒 Drawer opened");
-      } else {
-        console.warn("⚠️ Drawer function not found, staying on page.");
-      }
+      
     } catch (err) {
       console.error("❌ Error adding items to cart:", err);
     }
