@@ -95,31 +95,10 @@ document.addEventListener("DOMContentLoaded", function () {
       console.error("❌ Error cleaning cart:", err);
     }
 
-    // Step 2: Inject and submit with new items
+    // Step 2: Inject and re-submit form (native, not AJAX)
     injectAddonInputs(parentVariantId);
-
-    const formData = new FormData(atcForm);
-
-    try {
-      const response = await fetch('/cart/add.js', {
-        method: 'POST',
-        body: formData,
-        headers: { 'Accept': 'application/json' }
-      });
-
-      const result = await response.json();
-      console.log("✅ Items added to cart via AJAX:", result);
-
-      // Step 3: Open the drawer if supported
-      if (window.Shopify && typeof window.Shopify.openCartDrawer === 'function') {
-        window.Shopify.openCartDrawer();
-        console.log("🛒 Drawer opened");
-      } else {
-        console.warn("⚠️ Drawer function not found, staying on page.");
-      }
-    } catch (err) {
-      console.error("❌ Error adding items to cart:", err);
-    }
+    console.log("🚀 Submitting form again via native submit...");
+    atcForm.submit(); // this triggers native drawer behavior
   });
 
   // Also handle ATC button click in case theme interferes
