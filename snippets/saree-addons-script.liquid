@@ -79,7 +79,7 @@ document.addEventListener("DOMContentLoaded", function () {
         }
       });
 
-     /* if (Object.keys(updates).length > 0) {
+      if (Object.keys(updates).length > 0) {
         console.log("🔁 Sending update.js call to remove duplicates...");
         await fetch('/cart/update.js', {
           method: 'POST',
@@ -93,7 +93,7 @@ document.addEventListener("DOMContentLoaded", function () {
       }
     } catch (err) {
       console.error("❌ Error cleaning cart:", err);
-    }*/
+    }
 
     // Step 2: Inject and submit with new items
     injectAddonInputs(parentVariantId);
