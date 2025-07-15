@@ -49,7 +49,7 @@ document.addEventListener("DOMContentLoaded", function () {
   }
 
   atcForm.addEventListener("submit", async function (e) {
-    //e.preventDefault(); // prevent normal submission
+    e.preventDefault(); // prevent normal submission
     console.log("🖱️ ATC button clicked, preparing form...");
 
     const parentVariantId =
