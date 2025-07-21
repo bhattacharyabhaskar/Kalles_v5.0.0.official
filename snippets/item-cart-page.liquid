@@ -92,6 +92,7 @@
     </div>
   </div>
 </hdt-line-item>
+
 <script>
 async function handleCartRemove(el) {
   const itemKey = el.dataset.itemKey;
@@ -109,14 +110,12 @@ async function handleCartRemove(el) {
   try {
     console.log("📦 Fetching current cart data...");
     const cart = await fetch('/cart.js').then(res => res.json());
-
     console.log("🧾 Full cart contents:", cart.items);
 
     if (!linkedTo) {
       console.log("🛍 Parent item detected. Looking for linked add-ons...");
-
       const parentIdStr = parentVariantId?.toString();
-      const updates = {};
+      const keysToRemove = [];
 
       cart.items.forEach(item => {
         const key = item.key;
@@ -126,26 +125,31 @@ async function handleCartRemove(el) {
 
         console.log(`🔍 Inspecting: ${item.product_title}`);
         console.log(`    ↳ key: ${key}`);
-        console.log(`    ↳ variant_id: ${item.variant_id}`);
         console.log(`    ↳ linked: ${linked}`);
         console.log(`    ↳ isParent: ${isParent}, isLinked: ${isLinked}`);
 
         if (isParent || isLinked) {
-          updates[key] = 0;
-          console.log(`🗑 Marking for removal: ${item.product_title} (key: ${key})`);
+          keysToRemove.push(key);
+          console.log(`🗑 Marking for removal: ${item.product_title}`);
         }
       });
 
-      if (Object.keys(updates).length === 0) {
-        console.warn("⚠️ No items found to remove. Check 'Linked to Saree' and variant_id logic.");
+      if (keysToRemove.length === 0) {
+        console.warn("⚠️ No items found to remove.");
       }
 
-      console.log("📤 Sending update to /cart/update.js with:", updates);
-      await fetch('/cart/update.js', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ updates, sections: "cart_data,mini_cart" })
-      });
+      for (const key of keysToRemove) {
+        console.log(`📤 Removing via /cart/change.js → ${key}`);
+        await fetch('/cart/change.js', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            id: key,
+            quantity: 0,
+            sections: "cart_data,mini_cart"
+          })
+        });
+      }
 
     } else {
       console.log(`📤 Removing add-on only (key: ${itemKey}) via /cart/change.js`);
@@ -170,10 +174,10 @@ async function handleCartRemove(el) {
     console.log("🔄 Dispatching cart:refresh event");
     document.dispatchEvent(new CustomEvent("cart:refresh", { bubbles: true }));
 
-    // ✅ Ensure UI reflects the change
+    // ✅ Refresh cart UI
     setTimeout(() => {
       if (window.T4SThemeSP?.Cart?.getCart) {
-        console.log("🛒 Manually triggering cart drawer refresh");
+        console.log("🛒 Manually refreshing drawer");
         window.T4SThemeSP.Cart.getCart();
       } else if (window.location.pathname !== '/cart') {
         console.warn("⚠️ Drawer not found. Reloading...");
@@ -191,7 +195,6 @@ async function handleCartRemove(el) {
   }
 }
 </script>
-
 
 
 <style>
