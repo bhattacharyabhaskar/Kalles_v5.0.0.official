@@ -112,59 +112,46 @@ async function handleCartRemove(el) {
     const cart = await fetch('/cart.js').then(res => res.json());
     console.log("🧾 Full cart contents:", cart.items);
 
-    if (!linkedTo) {
-      console.log("🛍 Parent item detected. Looking for linked add-ons...");
-      const parentIdStr = parentVariantId?.toString();
-      const keysToRemove = [];
+    const parentIdStr = parentVariantId?.toString();
 
-      cart.items.forEach(item => {
-        const key = item.key;
-        const linked = item.properties?.['Linked to Saree']?.toString();
-        const isParent = item.variant_id.toString() === parentIdStr;
-        const isLinked = linked === parentIdStr;
+    // For collecting line numbers to remove
+    const linesToRemove = [];
 
-        console.log(`🔍 Inspecting: ${item.product_title}`);
-        console.log(`    ↳ key: ${key}`);
-        console.log(`    ↳ linked: ${linked}`);
-        console.log(`    ↳ isParent: ${isParent}, isLinked: ${isLinked}`);
+    cart.items.forEach((item, index) => {
+      const line = index + 1; // Shopify uses 1-based line index
+      const linked = item.properties?.['Linked to Saree']?.toString();
+      const isParent = item.variant_id.toString() === parentIdStr;
+      const isLinked = linked === parentIdStr;
 
-        if (isParent || isLinked) {
-          keysToRemove.push(key);
-          console.log(`🗑 Marking for removal: ${item.product_title}`);
-        }
-      });
+      console.log(`🔍 Inspecting: ${item.product_title}`);
+      console.log(`    ↳ line: ${line}`);
+      console.log(`    ↳ key: ${item.key}`);
+      console.log(`    ↳ variant_id: ${item.variant_id}`);
+      console.log(`    ↳ linked: ${linked}`);
+      console.log(`    ↳ isParent: ${isParent}, isLinked: ${isLinked}`);
 
-      if (keysToRemove.length === 0) {
-        console.warn("⚠️ No items found to remove.");
+      // Decide what to remove
+      if ((!linkedTo && (isParent || isLinked)) || (linkedTo && item.key === itemKey)) {
+        linesToRemove.push(line);
+        console.log(`🗑 Marking for removal: ${item.product_title} (line: ${line})`);
       }
+    });
 
-      for (const key of keysToRemove) {
-        console.log(`📤 Removing via /cart/change.js → ${key}`);
-        await fetch('/cart/change.js', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            id: key,
-            quantity: 0,
-            sections: "cart_data,mini_cart"
-          })
-        });
-      }
+    if (linesToRemove.length === 0) {
+      console.warn("⚠️ No items found to remove.");
+      el.disabled = false;
+      el.innerText = 'Delete';
+      return;
+    }
 
-    } else {
-      console.log(`📤 Removing add-on only (key: ${itemKey}) via /cart/change.js`);
-      if (!itemKey) {
-        console.error("❌ No itemKey found. Aborting.");
-        el.disabled = false;
-        el.innerText = 'Delete';
-        return;
-      }
-
+    // Remove each line individually using /cart/change.js
+    for (const line of linesToRemove) {
+      console.log(`📤 Removing via /cart/change.js → line ${line}`);
       await fetch('/cart/change.js', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          id: itemKey,
+          line,
           quantity: 0,
           sections: "cart_data,mini_cart"
         })
@@ -174,7 +161,6 @@ async function handleCartRemove(el) {
     console.log("🔄 Dispatching cart:refresh event");
     document.dispatchEvent(new CustomEvent("cart:refresh", { bubbles: true }));
 
-    // ✅ Refresh cart UI
     setTimeout(() => {
       if (window.T4SThemeSP?.Cart?.getCart) {
         console.log("🛒 Manually refreshing drawer");
