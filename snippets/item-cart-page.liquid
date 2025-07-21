@@ -112,31 +112,31 @@ async function handleCartRemove(el) {
     console.log("🧾 Initial cart contents:", cart.items);
 
     const parentIdStr = parentVariantId?.toString();
-    const variantKeysToRemove = [];
+    const keysToRemove = [];
 
-    cart.items.forEach((item, index) => {
+    cart.items.forEach(item => {
       const linked = item.properties?.['Linked to Saree']?.toString();
       const isParent = item.variant_id.toString() === parentIdStr;
       const isLinked = linked === parentIdStr;
+      const isExplicit = item.key === itemKey;
 
-      if ((!linkedTo && (isParent || isLinked)) || (linkedTo && item.key === itemKey)) {
-        variantKeysToRemove.push(item.variant_id.toString());
-        console.log(`🗑 Marking ${item.product_title} (variant_id: ${item.variant_id}) for removal`);
+      if ((!linkedTo && (isParent || isLinked)) || (linkedTo && isExplicit)) {
+        keysToRemove.push(item.key);
+        console.log(`🗑 Marking ${item.product_title} for removal (key: ${item.key})`);
       }
     });
 
-    for (const variantId of variantKeysToRemove) {
-      // 🌀 Re-fetch cart before each deletion to get accurate line #
+    for (const key of keysToRemove) {
       cart = await fetch('/cart.js').then(res => res.json());
+      const itemIndex = cart.items.findIndex(i => i.key === key);
 
-      const itemIndex = cart.items.findIndex(i => i.variant_id.toString() === variantId);
       if (itemIndex === -1) {
-        console.warn(`⚠️ Variant ${variantId} not found in latest cart`);
+        console.warn(`⚠️ Could not find item with key ${key} in latest cart`);
         continue;
       }
 
       const line = itemIndex + 1;
-      console.log(`📤 Removing via /cart/change.js → line ${line}`);
+      console.log(`📤 Removing via /cart/change.js → line ${line} (key: ${key})`);
 
       await fetch('/cart/change.js', {
         method: 'POST',
@@ -172,6 +172,7 @@ async function handleCartRemove(el) {
   }
 }
 </script>
+
 
 
 
