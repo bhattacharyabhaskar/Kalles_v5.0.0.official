@@ -97,10 +97,16 @@ async function handleCartRemove(el) {
   const linkedTo = el.dataset.linkedTo || null;
   const parentVariantId = el.dataset.variantId;
 
+  console.log("🧩 handleCartRemove triggered");
+  console.log("➡️ itemKey:", itemKey);
+  console.log("🔗 linkedTo:", linkedTo);
+  console.log("🆔 parentVariantId:", parentVariantId);
+
   el.disabled = true;
   el.innerText = 'Deleting…';
 
   try {
+    console.log("📦 Fetching current cart data...");
     const cart = await fetch('/cart.js').then(res => res.json());
 
     if (!linkedTo) {
@@ -115,6 +121,7 @@ async function handleCartRemove(el) {
 
         if (isParent || isLinked) {
           updates[key] = 0;
+          console.log(`🗑 Marking for removal: ${item.product_title} (key: ${key}, linked: ${linked}, variant_id: ${item.variant_id})`);
         }
       });
 
@@ -122,6 +129,7 @@ async function handleCartRemove(el) {
         console.warn("⚠️ No items found to remove. Check variant_id and 'Linked to Saree' property.");
       }
 
+      console.log("📤 Sending update to /cart/update.js with:", updates);
       await fetch('/cart/update.js', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -129,6 +137,7 @@ async function handleCartRemove(el) {
       });
 
     } else {
+      console.log(`📤 Removing add-on only (key: ${itemKey}) via /cart/change.js`);
       await fetch('/cart/change.js', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -140,12 +149,15 @@ async function handleCartRemove(el) {
       });
     }
 
+    console.log("🔄 Dispatching cart:refresh event");
     document.dispatchEvent(new CustomEvent("cart:refresh", { bubbles: true }));
 
     // ✅ Ensure UI reflects the change
     if (window.T4SThemeSP && window.T4SThemeSP.Cart && typeof window.T4SThemeSP.Cart.getCart === 'function') {
+      console.log("🛒 Manually triggering cart drawer refresh");
       window.T4SThemeSP.Cart.getCart();
     } else {
+      console.warn("⚠️ T4SThemeSP.Cart.getCart not available. Falling back to reload.");
       location.reload();
     }
 
