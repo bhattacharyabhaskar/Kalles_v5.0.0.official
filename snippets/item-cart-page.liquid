@@ -110,24 +110,34 @@ async function handleCartRemove(el) {
     console.log("📦 Fetching current cart data...");
     const cart = await fetch('/cart.js').then(res => res.json());
 
+    console.log("🧾 Full cart contents:", cart.items);
+
     if (!linkedTo) {
       console.log("🛍 Parent item detected. Looking for linked add-ons...");
+
+      const parentIdStr = parentVariantId?.toString();
       const updates = {};
 
       cart.items.forEach(item => {
         const key = item.key;
-        const linked = item.properties?.['Linked to Saree'];
-        const isParent = item.variant_id == parentVariantId;
-        const isLinked = linked == parentVariantId;
+        const linked = item.properties?.['Linked to Saree']?.toString();
+        const isParent = item.variant_id.toString() === parentIdStr;
+        const isLinked = linked === parentIdStr;
+
+        console.log(`🔍 Inspecting: ${item.product_title}`);
+        console.log(`    ↳ key: ${key}`);
+        console.log(`    ↳ variant_id: ${item.variant_id}`);
+        console.log(`    ↳ linked: ${linked}`);
+        console.log(`    ↳ isParent: ${isParent}, isLinked: ${isLinked}`);
 
         if (isParent || isLinked) {
           updates[key] = 0;
-          console.log(`🗑 Marking for removal: ${item.product_title} (key: ${key}, linked: ${linked}, variant_id: ${item.variant_id})`);
+          console.log(`🗑 Marking for removal: ${item.product_title} (key: ${key})`);
         }
       });
 
       if (Object.keys(updates).length === 0) {
-        console.warn("⚠️ No items found to remove. Check variant_id and 'Linked to Saree' property.");
+        console.warn("⚠️ No items found to remove. Check 'Linked to Saree' and variant_id logic.");
       }
 
       console.log("📤 Sending update to /cart/update.js with:", updates);
@@ -139,6 +149,13 @@ async function handleCartRemove(el) {
 
     } else {
       console.log(`📤 Removing add-on only (key: ${itemKey}) via /cart/change.js`);
+      if (!itemKey) {
+        console.error("❌ No itemKey found. Aborting.");
+        el.disabled = false;
+        el.innerText = 'Delete';
+        return;
+      }
+
       await fetch('/cart/change.js', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -154,13 +171,17 @@ async function handleCartRemove(el) {
     document.dispatchEvent(new CustomEvent("cart:refresh", { bubbles: true }));
 
     // ✅ Ensure UI reflects the change
-    if (window.T4SThemeSP && window.T4SThemeSP.Cart && typeof window.T4SThemeSP.Cart.getCart === 'function') {
-      console.log("🛒 Manually triggering cart drawer refresh");
-      window.T4SThemeSP.Cart.getCart();
-    } else {
-      console.warn("⚠️ T4SThemeSP.Cart.getCart not available. Falling back to reload.");
-      location.reload();
-    }
+    setTimeout(() => {
+      if (window.T4SThemeSP?.Cart?.getCart) {
+        console.log("🛒 Manually triggering cart drawer refresh");
+        window.T4SThemeSP.Cart.getCart();
+      } else if (window.location.pathname !== '/cart') {
+        console.warn("⚠️ Drawer not found. Reloading...");
+        location.reload();
+      } else {
+        console.log("✅ Already on /cart page, no reload needed");
+      }
+    }, 150);
 
   } catch (err) {
     console.error("❌ Failed to remove:", err);
@@ -170,6 +191,7 @@ async function handleCartRemove(el) {
   }
 }
 </script>
+
 
 
 <style>
