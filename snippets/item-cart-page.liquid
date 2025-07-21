@@ -73,9 +73,10 @@
             {% if item.properties['Linked to Saree'] %}
               data-linked-to="{{ item.properties['Linked to Saree'] }}"
             {% endif %}
-            onclick="handleCartRemove(this)">
+            onclick="handleCartRemove(event, '{{ item.key }}')">
             Delete
           </button>
+
 
         </wrapp-remove-item-oncart>
         {% comment %} {%- if item.product.variants.size > 1 or qty_rules or item.product.selling_plan_groups.size > 0 -%}
