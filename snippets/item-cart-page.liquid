@@ -108,45 +108,36 @@ async function handleCartRemove(el) {
   el.innerText = 'Deleting…';
 
   try {
-    console.log("📦 Fetching current cart data...");
-    const cart = await fetch('/cart.js').then(res => res.json());
-    console.log("🧾 Full cart contents:", cart.items);
+    let cart = await fetch('/cart.js').then(res => res.json());
+    console.log("🧾 Initial cart contents:", cart.items);
 
     const parentIdStr = parentVariantId?.toString();
-
-    // For collecting line numbers to remove
-    const linesToRemove = [];
+    const variantKeysToRemove = [];
 
     cart.items.forEach((item, index) => {
-      const line = index + 1; // Shopify uses 1-based line index
       const linked = item.properties?.['Linked to Saree']?.toString();
       const isParent = item.variant_id.toString() === parentIdStr;
       const isLinked = linked === parentIdStr;
 
-      console.log(`🔍 Inspecting: ${item.product_title}`);
-      console.log(`    ↳ line: ${line}`);
-      console.log(`    ↳ key: ${item.key}`);
-      console.log(`    ↳ variant_id: ${item.variant_id}`);
-      console.log(`    ↳ linked: ${linked}`);
-      console.log(`    ↳ isParent: ${isParent}, isLinked: ${isLinked}`);
-
-      // Decide what to remove
       if ((!linkedTo && (isParent || isLinked)) || (linkedTo && item.key === itemKey)) {
-        linesToRemove.push(line);
-        console.log(`🗑 Marking for removal: ${item.product_title} (line: ${line})`);
+        variantKeysToRemove.push(item.variant_id.toString());
+        console.log(`🗑 Marking ${item.product_title} (variant_id: ${item.variant_id}) for removal`);
       }
     });
 
-    if (linesToRemove.length === 0) {
-      console.warn("⚠️ No items found to remove.");
-      el.disabled = false;
-      el.innerText = 'Delete';
-      return;
-    }
+    for (const variantId of variantKeysToRemove) {
+      // 🌀 Re-fetch cart before each deletion to get accurate line #
+      cart = await fetch('/cart.js').then(res => res.json());
 
-    // Remove each line individually using /cart/change.js
-    for (const line of linesToRemove) {
+      const itemIndex = cart.items.findIndex(i => i.variant_id.toString() === variantId);
+      if (itemIndex === -1) {
+        console.warn(`⚠️ Variant ${variantId} not found in latest cart`);
+        continue;
+      }
+
+      const line = itemIndex + 1;
       console.log(`📤 Removing via /cart/change.js → line ${line}`);
+
       await fetch('/cart/change.js', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -163,7 +154,7 @@ async function handleCartRemove(el) {
 
     setTimeout(() => {
       if (window.T4SThemeSP?.Cart?.getCart) {
-        console.log("🛒 Manually refreshing drawer");
+        console.log("🛒 Refreshing cart drawer");
         window.T4SThemeSP.Cart.getCart();
       } else if (window.location.pathname !== '/cart') {
         console.warn("⚠️ Drawer not found. Reloading...");
@@ -181,6 +172,7 @@ async function handleCartRemove(el) {
   }
 }
 </script>
+
 
 
 <style>
