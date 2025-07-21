@@ -114,11 +114,9 @@ async function handleCartRemove(el) {
     const parentIdStr = parentVariantId?.toString();
     const keysToRemove = [];
 
-    // Step 1: Determine which item keys to remove
     cart.items.forEach(item => {
-      const linked = item.properties?.['Linked to Saree']?.toString();
       const isParent = item.variant_id.toString() === parentIdStr;
-      const isLinked = linked === parentIdStr;
+      const isLinked = item.properties?.['Linked to Saree']?.toString() === parentIdStr;
       const isExplicit = item.key === itemKey;
 
       if ((!linkedTo && (isParent || isLinked)) || (linkedTo && isExplicit)) {
@@ -127,34 +125,37 @@ async function handleCartRemove(el) {
       }
     });
 
-    // Step 2: Remove each item by re-fetching the cart and finding current line
-    for (const key of keysToRemove) {
-      cart = await fetch('/cart.js').then(res => res.json());
-      const itemIndex = cart.items.findIndex(i => i.key === key);
+    // Get fresh cart and calculate lines to remove
+    cart = await fetch('/cart.js').then(res => res.json());
+    const changes = {};
 
-      if (itemIndex === -1) {
-        console.warn(`⚠️ Could not find item with key ${key} in latest cart`);
-        continue;
+    cart.items.forEach((item, idx) => {
+      if (keysToRemove.includes(item.key)) {
+        const line = idx + 1;
+        changes[line] = 0;
+        console.log(`📤 Will remove line ${line} → key: ${item.key}`);
       }
+    });
 
-      const line = itemIndex + 1;
-      console.log(`📤 Removing via /cart/change.js → line ${line} (key: ${key})`);
-
-      await fetch('/cart/change.js', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          line,
-          quantity: 0,
-          sections: "cart_data,mini_cart"
-        })
-      });
+    if (Object.keys(changes).length === 0) {
+      console.warn("⚠️ Nothing to remove");
+      return;
     }
+
+    // Single bulk delete call
+    await fetch('/cart/change.js', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        updates: changes,
+        sections: "cart_data,mini_cart"
+      })
+    });
 
     console.log("🔄 Dispatching cart:refresh event");
     document.dispatchEvent(new CustomEvent("cart:refresh", { bubbles: true }));
 
-    // Step 3: Ensure UI reflects the change
+    // UI update: drawer/cart
     setTimeout(() => {
       if (window.T4SThemeSP?.Cart?.getCart) {
         console.log("🛒 Refreshing cart drawer");
@@ -166,7 +167,7 @@ async function handleCartRemove(el) {
         console.warn("⚠️ Drawer not found. Reloading...");
         location.reload();
       }
-    }, 150);
+    }, 250);
 
   } catch (err) {
     console.error("❌ Failed to remove:", err);
@@ -175,6 +176,7 @@ async function handleCartRemove(el) {
     el.innerText = 'Delete';
   }
 }
+
 </script>
 
 
