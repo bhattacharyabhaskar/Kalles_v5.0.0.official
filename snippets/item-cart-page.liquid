@@ -114,6 +114,7 @@ async function handleCartRemove(el) {
     const parentIdStr = parentVariantId?.toString();
     const keysToRemove = [];
 
+    // Step 1: Determine which item keys to remove
     cart.items.forEach(item => {
       const linked = item.properties?.['Linked to Saree']?.toString();
       const isParent = item.variant_id.toString() === parentIdStr;
@@ -126,6 +127,7 @@ async function handleCartRemove(el) {
       }
     });
 
+    // Step 2: Remove each item by re-fetching the cart and finding current line
     for (const key of keysToRemove) {
       cart = await fetch('/cart.js').then(res => res.json());
       const itemIndex = cart.items.findIndex(i => i.key === key);
@@ -152,15 +154,17 @@ async function handleCartRemove(el) {
     console.log("🔄 Dispatching cart:refresh event");
     document.dispatchEvent(new CustomEvent("cart:refresh", { bubbles: true }));
 
+    // Step 3: Ensure UI reflects the change
     setTimeout(() => {
       if (window.T4SThemeSP?.Cart?.getCart) {
         console.log("🛒 Refreshing cart drawer");
         window.T4SThemeSP.Cart.getCart();
-      } else if (window.location.pathname !== '/cart') {
-        console.warn("⚠️ Drawer not found. Reloading...");
+      } else if (window.location.pathname === '/cart') {
+        console.log("🔁 Full reload for cart page");
         location.reload();
       } else {
-        console.log("✅ Already on /cart page, no reload needed");
+        console.warn("⚠️ Drawer not found. Reloading...");
+        location.reload();
       }
     }, 150);
 
@@ -172,8 +176,6 @@ async function handleCartRemove(el) {
   }
 }
 </script>
-
-
 
 
 <style>
