@@ -64,10 +64,6 @@
     <div class="hdt-mini-cart__actions">
       <hdt-quantity-wrapp class="hdt-mini-cart__quantity" form="id:{{ form_id }}">
         <div data-quantity-wrapper class="hdt-quantity-wrapper hdt-quantity-cart-item hdt-block hdt-text-center hdt-relative hdt-align-center">
-          <button class="hdt-quantity__button no-js-hidden is--minus hdt-absolute hdt-p-0 hdt-top-0 hdt-left-0 hdt-text-start" name="minus" type="button"  {%- if item.quantity == 1 -%} style="top: 5px" {%- endif -%}>
-            <span class="sr-only">{{- 'products.product.quantity.decrease' | t: product: item.product.title | escape -}}</span>
-           
-          </button>
           <input will-change-cart class="hdt-quantity-input hdt-text-center hdt-text-lg hdt-font-semibold hdt-p-0" type="number" name="updates[]" min="{{ quantity_rule.min }}" data-max="{{ max_qty }}" max="{{ max_qty }}" value="{{ item.quantity }}" aria-label="{{ 'products.product.quantity.input_label' | t: product: item.product.title | escape }}" data-index="{{ item.index | plus: 1 }}">
           <button class="hdt-quantity__button is--plus hdt-absolute hdt-p-0 hdt-top-0 hdt-right-0 hdt-text-end no-js-hidden" name="plus" type="button">
             <span class="sr-only">{{- 'products.product.quantity.increase' | t: product: item.product.title | escape -}}</span>
