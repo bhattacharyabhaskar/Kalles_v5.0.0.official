@@ -98,8 +98,9 @@
 async function handleCartRemove(event) {
   console.log("🧩 handleCartRemove triggered");
 
-  const button = event.currentTarget;
+  const button = event.currentTarget; // <- fixed
   const itemKeyToRemove = button.dataset.itemKey;
+
   if (!itemKeyToRemove) {
     console.warn("❌ itemKey missing on button");
     return;
@@ -121,9 +122,8 @@ async function handleCartRemove(event) {
   const parentVariantId = lineItems[parentLineIndex].variant_id;
   console.log("🆔 parentVariantId:", parentVariantId);
 
-  lineItemsToRemove.push(parentLineIndex + 1); // 1-based
+  lineItemsToRemove.push(parentLineIndex + 1);
 
-  // Find add-ons
   for (let i = 0; i < lineItems.length; i++) {
     const linked = lineItems[i].properties?.['Linked to Saree'];
     if (linked && parseInt(linked) === parentVariantId) {
@@ -132,7 +132,6 @@ async function handleCartRemove(event) {
     }
   }
 
-  // Remove in reverse order
   lineItemsToRemove.sort((a, b) => b - a);
   console.log("📤 Will remove lines:", lineItemsToRemove);
 
@@ -140,7 +139,7 @@ async function handleCartRemove(event) {
     const res = await fetch('/cart/change.js', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ line: line, quantity: 0 })
+      body: JSON.stringify({ line, quantity: 0 })
     });
 
     if (!res.ok) {
@@ -151,7 +150,6 @@ async function handleCartRemove(event) {
 
   window.location.reload();
 }
-
 </script>
 
 
