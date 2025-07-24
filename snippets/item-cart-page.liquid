@@ -105,7 +105,6 @@ async function handleCartRemove(event, itemKeyToRemove) {
 
   const lineItemsToRemove = [];
 
-  // Find the parent line index
   const parentLineIndex = lineItems.findIndex(item => item.key === itemKeyToRemove);
   if (parentLineIndex === -1) {
     console.warn("❌ Parent item not found");
@@ -115,10 +114,8 @@ async function handleCartRemove(event, itemKeyToRemove) {
   const parentVariantId = lineItems[parentLineIndex].variant_id;
   console.log("🆔 parentVariantId:", parentVariantId);
 
-  // Include parent in list of removals
-  lineItemsToRemove.push(parentLineIndex + 1); // Shopify line numbers are 1-based
+  lineItemsToRemove.push(parentLineIndex + 1); // 1-based index
 
-  // Find children linked to the parent
   for (let i = 0; i < lineItems.length; i++) {
     const item = lineItems[i];
     const linkedTo = item.properties?.['Linked to Saree'];
@@ -128,7 +125,6 @@ async function handleCartRemove(event, itemKeyToRemove) {
     }
   }
 
-  // Prepare update object with quantity 0 for each line
   const updates = {};
   lineItemsToRemove.forEach(lineNum => {
     updates[lineNum] = 0;
@@ -137,7 +133,7 @@ async function handleCartRemove(event, itemKeyToRemove) {
   console.log("📤 Will remove lines:", updates);
 
   try {
-    const res = await fetch('/cart/change.js', {
+    const res = await fetch('/cart/update.js', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json'
@@ -147,16 +143,17 @@ async function handleCartRemove(event, itemKeyToRemove) {
 
     if (!res.ok) {
       const text = await res.text();
-      console.error("❌ cart/change.js failed:", res.status, text);
+      console.error("❌ cart/update.js failed:", res.status, text);
       return;
     }
 
     console.log("✅ Items removed, refreshing cart");
-    window.location.reload(); // Optional: trigger drawer open instead
+    window.location.reload();
   } catch (err) {
-    console.error("🚨 Exception in cart/change.js", err);
+    console.error("🚨 Exception in cart/update.js", err);
   }
 }
+
 </script>
 
 
