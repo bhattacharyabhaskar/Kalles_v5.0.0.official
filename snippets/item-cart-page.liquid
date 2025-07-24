@@ -99,69 +99,69 @@
   <div style="margin-top: 10px; text-align:center; font-weight: 600;">Removing items...</div>
 </div>
 
-<script>async function handleCartRemove(event) {
+<script>
+async function handleCartRemove(event) {
   console.log("🧩 handleCartRemove triggered");
+
   const button = event.currentTarget;
 
   const loader = document.getElementById('ivy-loader');
-  loader.style.display = 'block'; // 👈 Show loader
+  loader.style.display = 'block'; // Show loader
 
   const itemKeyToRemove = button.dataset.itemKey;
-
   if (!itemKeyToRemove) {
-    console.warn("❌ itemKey missing on button");
-    loader.style.display = 'none'; // 👈 Hide loader on early exit
+    console.warn("❌ itemKey missing");
+    loader.style.display = 'none';
     return;
   }
 
-  const cartData = await fetch('/cart.js').then(res => res.json());
-  const lineItems = cartData.items;
-  console.log("🧾 Initial cart contents:", lineItems);
+  try {
+    const cart = await fetch('/cart.js').then(res => res.json());
+    const items = cart.items;
 
-  const lineItemsToRemove = [];
+    console.log("🧾 Initial cart contents:", items);
 
-  const parentLineIndex = lineItems.findIndex(item => item.key === itemKeyToRemove);
-  if (parentLineIndex === -1) {
-    console.warn("❌ Parent item not found");
-    loader.style.display = 'none'; // 👈 Hide loader on error
-    return;
-  }
-
-  const parentVariantId = lineItems[parentLineIndex].variant_id;
-  console.log("🆔 parentVariantId:", parentVariantId);
-
-  lineItemsToRemove.push(parentLineIndex + 1);
-
-  for (let i = 0; i < lineItems.length; i++) {
-    const linked = lineItems[i].properties?.['Linked to Saree'];
-    if (linked && parseInt(linked) === parentVariantId) {
-      console.log(`🗑 Marking ${lineItems[i].title} for removal (line ${i + 1})`);
-      lineItemsToRemove.push(i + 1);
+    const parentIndex = items.findIndex(item => item.key === itemKeyToRemove);
+    if (parentIndex === -1) {
+      console.warn("❌ Parent item not found");
+      loader.style.display = 'none';
+      return;
     }
-  }
 
-  lineItemsToRemove.sort((a, b) => b - a);
-  console.log("📤 Will remove lines:", lineItemsToRemove);
+    const parentVariantId = items[parentIndex].variant_id;
+    const linesToRemove = { [parentIndex + 1]: 0 };
 
-  for (const line of lineItemsToRemove) {
+    // Find all addons
+    items.forEach((item, idx) => {
+      if (item.properties?.['Linked to Saree'] && parseInt(item.properties['Linked to Saree']) === parentVariantId) {
+        console.log(`🗑 Marking ${item.title} for removal (line ${idx + 1})`);
+        linesToRemove[idx + 1] = 0;
+      }
+    });
+
+    console.log("📤 Sending batch update:", linesToRemove);
+
     const res = await fetch('/cart/change.js', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ line, quantity: 0 })
+      body: JSON.stringify({ updates: linesToRemove })
     });
 
     if (!res.ok) {
-      const err = await res.text();
-      console.error(`❌ Failed to remove line ${line}:`, res.status, err);
+      const text = await res.text();
+      console.error("❌ cart/change.js failed:", res.status, text);
+    } else {
+      console.log("✅ Items removed");
     }
-  }
 
-  // Optional small delay for better UX
-  setTimeout(() => {
-    window.location.reload();
-  }, 300);
+  } catch (err) {
+    console.error("🚨 Exception while removing", err);
+  } finally {
+    window.location.reload(); // or trigger drawer refresh
+  }
 }
 </script>
+
 
 
 
