@@ -299,6 +299,66 @@
     <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
   </symbol>
 </svg>
+<script>
+  async function handleCartRemove(event) {
+    const button = event.currentTarget;
+    const loader = document.getElementById('ivy-loader');
+    if (loader) loader.style.display = 'block';
+
+    const itemKeyToRemove = button.dataset.itemKey;
+    if (!itemKeyToRemove) {
+      console.warn("❌ itemKey missing");
+      if (loader) loader.style.display = 'none';
+      return;
+    }
+
+    try {
+      const cart = await fetch('/cart.js').then(res => res.json());
+      const items = cart.items;
+
+      const parentItem = items.find(item => item.key === itemKeyToRemove);
+      if (!parentItem) {
+        console.warn("❌ Parent item not found");
+        if (loader) loader.style.display = 'none';
+        return;
+      }
+
+      const parentVariantId = parentItem.variant_id;
+      const updates = { [parentItem.key]: 0 };
+
+      for (const item of items) {
+        if (item.properties?.['Linked to Saree'] && parseInt(item.properties['Linked to Saree']) === parentVariantId) {
+          updates[item.key] = 0;
+        }
+      }
+
+      const res = await fetch('/cart/update.js', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ updates })
+      });
+
+      if (!res.ok) {
+        const text = await res.text();
+        console.error("❌ cart/update.js failed:", res.status, text);
+      }
+
+    } catch (err) {
+      console.error("🚨 Exception in cart/update.js", err);
+    } finally {
+      window.location.reload();
+    }
+  }
+
+  document.addEventListener('DOMContentLoaded', function () {
+    document.body.addEventListener('click', function (e) {
+      if (e.target.closest('.t4s-mini_cart__remove-btn')) {
+        handleCartRemove(e);
+      }
+    });
+  });
+</script>
+
 {% schema %}
 {
   "name": "t:sections.main-cart.name",
