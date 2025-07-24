@@ -109,13 +109,11 @@ async function handleCartRemove(event) {
 
   const button = event.currentTarget;
 
-  const loader = document.getElementById('ivy-loader');
-  loader.style.display = 'block'; // Show spinner
+ 
 
   const itemKeyToRemove = button.dataset.itemKey;
   if (!itemKeyToRemove) {
     console.warn("❌ itemKey missing");
-    loader.style.display = 'none';
     return;
   }
 
@@ -128,7 +126,6 @@ async function handleCartRemove(event) {
     const parentItem = items.find(item => item.key === itemKeyToRemove);
     if (!parentItem) {
       console.warn("❌ Parent item not found");
-      loader.style.display = 'none';
       return;
     }
 
