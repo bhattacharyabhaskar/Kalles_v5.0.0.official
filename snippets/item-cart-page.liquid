@@ -95,16 +95,20 @@
 </hdt-line-item>
 
 <script>
-async function handleCartRemove(event, itemKeyToRemove) {
+async function handleCartRemove(button) {
   console.log("🧩 handleCartRemove triggered");
+
+  const itemKeyToRemove = button.dataset.itemKey;
+  const linkedTo = button.dataset.linkedTo;
+  const variantId = parseInt(button.dataset.variantId);
 
   const cartData = await fetch('/cart.js').then(res => res.json());
   const lineItems = cartData.items;
-
   console.log("🧾 Initial cart contents:", lineItems);
 
   const lineItemsToRemove = [];
 
+  // Step 1: Find parent line number
   const parentLineIndex = lineItems.findIndex(item => item.key === itemKeyToRemove);
   if (parentLineIndex === -1) {
     console.warn("❌ Parent item not found");
@@ -114,43 +118,42 @@ async function handleCartRemove(event, itemKeyToRemove) {
   const parentVariantId = lineItems[parentLineIndex].variant_id;
   console.log("🆔 parentVariantId:", parentVariantId);
 
-  lineItemsToRemove.push(parentLineIndex + 1); // 1-based index
+  // Step 2: Add parent line (1-based index)
+  lineItemsToRemove.push(parentLineIndex + 1);
 
+  // Step 3: Add add-ons linked to this parent
   for (let i = 0; i < lineItems.length; i++) {
     const item = lineItems[i];
-    const linkedTo = item.properties?.['Linked to Saree'];
-    if (linkedTo && parseInt(linkedTo) === parentVariantId) {
+    const linked = item.properties?.['Linked to Saree'];
+    if (linked && parseInt(linked) === parentVariantId) {
       console.log(`🗑 Marking ${item.title} for removal (line ${i + 1})`);
       lineItemsToRemove.push(i + 1);
     }
   }
 
+  // Step 4: Sort lines in reverse so parent is last (just in case)
+  lineItemsToRemove.sort((a, b) => b - a);
   console.log("📤 Will remove lines:", lineItemsToRemove);
 
-  try {
-    for (let lineNum of lineItemsToRemove) {
-      const res = await fetch('/cart/change.js', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({ line: lineNum, quantity: 0 })
-      });
+  // Step 5: Remove each line one by one
+  for (const line of lineItemsToRemove) {
+    const res = await fetch('/cart/change.js', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ line, quantity: 0 })
+    });
 
-      if (!res.ok) {
-        const text = await res.text();
-        console.error(`❌ Failed to remove line ${lineNum}:`, res.status, text);
-        return;
-      }
+    if (!res.ok) {
+      const errorText = await res.text();
+      console.error(`❌ Failed to remove line ${line}:`, res.status, errorText);
     }
-
-    console.log("✅ All items removed");
-    window.location.reload();
-  } catch (err) {
-    console.error("🚨 Exception during deletion", err);
   }
+
+  // Step 6: Refresh
+  window.location.reload();
 }
 </script>
+
 
 
 <style>
