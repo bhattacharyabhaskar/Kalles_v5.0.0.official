@@ -88,16 +88,29 @@
     </div>
   </div>
 </hdt-line-item>
+<div id="ivy-loader" style="display:none; position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%);
+  background: rgba(255,255,255,0.9); padding: 20px; border-radius: 10px; z-index: 9999;">
+  <svg width="40" height="40" viewBox="0 0 100 100" preserveAspectRatio="xMidYMid">
+    <circle cx="50" cy="50" r="32" stroke-width="8" stroke="#a00000" stroke-dasharray="50.26548245743669 50.26548245743669" fill="none" stroke-linecap="round">
+      <animateTransform attributeName="transform" type="rotate" repeatCount="indefinite" dur="1s" keyTimes="0;1"
+        values="0 50 50;360 50 50"></animateTransform>
+    </circle>
+  </svg>
+  <div style="margin-top: 10px; text-align:center; font-weight: 600;">Removing items...</div>
+</div>
 
-<script>
-async function handleCartRemove(event) {
+<script>async function handleCartRemove(event) {
   console.log("🧩 handleCartRemove triggered");
+  const button = event.currentTarget;
 
-  const button = event.currentTarget; // <- fixed
+  const loader = document.getElementById('ivy-loader');
+  loader.style.display = 'block'; // 👈 Show loader
+
   const itemKeyToRemove = button.dataset.itemKey;
 
   if (!itemKeyToRemove) {
     console.warn("❌ itemKey missing on button");
+    loader.style.display = 'none'; // 👈 Hide loader on early exit
     return;
   }
 
@@ -107,10 +120,10 @@ async function handleCartRemove(event) {
 
   const lineItemsToRemove = [];
 
-  // Find parent line
   const parentLineIndex = lineItems.findIndex(item => item.key === itemKeyToRemove);
   if (parentLineIndex === -1) {
     console.warn("❌ Parent item not found");
+    loader.style.display = 'none'; // 👈 Hide loader on error
     return;
   }
 
@@ -143,7 +156,10 @@ async function handleCartRemove(event) {
     }
   }
 
-  window.location.reload();
+  // Optional small delay for better UX
+  setTimeout(() => {
+    window.location.reload();
+  }, 300);
 }
 </script>
 
