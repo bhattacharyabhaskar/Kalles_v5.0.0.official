@@ -125,35 +125,31 @@ async function handleCartRemove(event, itemKeyToRemove) {
     }
   }
 
-  const updates = {};
-  lineItemsToRemove.forEach(lineNum => {
-    updates[lineNum] = 0;
-  });
-
-  console.log("📤 Will remove lines:", updates);
+  console.log("📤 Will remove lines:", lineItemsToRemove);
 
   try {
-    const res = await fetch('/cart/update.js', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify({ updates })
-    });
+    for (let lineNum of lineItemsToRemove) {
+      const res = await fetch('/cart/change.js', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ line: lineNum, quantity: 0 })
+      });
 
-    if (!res.ok) {
-      const text = await res.text();
-      console.error("❌ cart/update.js failed:", res.status, text);
-      return;
+      if (!res.ok) {
+        const text = await res.text();
+        console.error(`❌ Failed to remove line ${lineNum}:`, res.status, text);
+        return;
+      }
     }
 
-    console.log("✅ Items removed, refreshing cart");
+    console.log("✅ All items removed");
     window.location.reload();
   } catch (err) {
-    console.error("🚨 Exception in cart/update.js", err);
+    console.error("🚨 Exception during deletion", err);
   }
 }
-
 </script>
 
 
