@@ -85,7 +85,6 @@
                     <td class="hdt-cart-item__price hdt-page-cart__prices hdt-text-center" cart-data-title="{{ 'sections.cart.headings.price' | t }}">{%- render 'line-item-price', line_item: item, price_class: 'hdt-price-wrapp hdt-justify-center' -%}</td>
                     <td class="hdt-cart-item__quantity hdt-page-cart__quantity" cart-data-title="{{ 'sections.cart.headings.quantity' | t }}">
                       <hdt-quantity-wrapp class="hdt-quantity-wrapp hdt-quantity-cart-item hdt-s-text hdt-text-center hdt-relative">
-                        <wrapp-remove-item-oncart placement="none" class="{% if item.quantity == 1 %}hdt-inline-flex hdt-align-center no-js-hidden hdt-absolute hdt-p-0 hdt-top-0 hdt-left-0 hdt-text-start{% else %}hdt-hidden{% endif %}" data-index="{{ item.index | plus: 1 }}" form="id:{{ form_id }}"><a href="{{ routes.cart_change_url }}?line={{ item.index | plus: 1 }}&quantity=0" class="hdt-mini-cart__remove hdt-s-text"><svg viewBox="0 0 24 24" width="17"><use href="#icon-cart-remove"></use></svg></a></wrapp-remove-item-oncart>
                         <button class="hdt-quantity__button no-js-hidden is--minus hdt-absolute hdt-p-0 hdt-top-0 hdt-left-0 hdt-text-start{% if item.quantity == 1 %} hdt-hidden{% endif %}" name="minus" type="button">
                           <span class="sr-only">{{- 'products.product.quantity.decrease' | t: product: item.product.title | escape -}}</span>
                         </button>
