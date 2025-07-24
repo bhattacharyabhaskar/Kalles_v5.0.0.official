@@ -88,13 +88,11 @@
                         <wrapp-remove-item-oncart placement="none" class="{% if item.quantity == 1 %}hdt-inline-flex hdt-align-center no-js-hidden hdt-absolute hdt-p-0 hdt-top-0 hdt-left-0 hdt-text-start{% else %}hdt-hidden{% endif %}" data-index="{{ item.index | plus: 1 }}" form="id:{{ form_id }}"><a href="{{ routes.cart_change_url }}?line={{ item.index | plus: 1 }}&quantity=0" class="hdt-mini-cart__remove hdt-s-text"><svg viewBox="0 0 24 24" width="17"><use href="#icon-cart-remove"></use></svg></a></wrapp-remove-item-oncart>
                         <button class="hdt-quantity__button no-js-hidden is--minus hdt-absolute hdt-p-0 hdt-top-0 hdt-left-0 hdt-text-start{% if item.quantity == 1 %} hdt-hidden{% endif %}" name="minus" type="button">
                           <span class="sr-only">{{- 'products.product.quantity.decrease' | t: product: item.product.title | escape -}}</span>
-                          {%- render 'icon' with 'minus' -%}
                         </button>
 
                         <input class="quantity__input hdt-quantity-input hdt-text-center hdt-text-lg hdt-font-semibold hdt-p-0" type="number" name="updates[]" min="{{ quantity_rule.min }}" data-max="{{ max_qty }}" max="{{ max_qty }}" value="{{ item.quantity }}" aria-label="{{ 'products.product.quantity.input_label' | t: product: item.product.title | escape }}" data-index="{{ item.index | plus: 1 }}">
                         <button class="hdt-quantity__button no-js-hidden is--plus hdt-absolute hdt-p-0 hdt-top-0 hdt-right-0 hdt-text-end" name="plus" type="button">
                           <span class="sr-only">{{- 'products.product.quantity.increase' | t: product: item.product.title | escape -}}</span>
-                          {%- render 'icon' with 'plus' -%}
                         </button>
                       </hdt-quantity-wrapp>
                     </td>
