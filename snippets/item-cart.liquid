@@ -102,3 +102,97 @@
     </div>
   </div>
 </hdt-line-item>
+
+<script>
+async function handleCartRemove(event) {
+  console.log("🧩 handleCartRemove triggered");
+
+  const button = event.currentTarget;
+
+  const loader = document.getElementById('ivy-loader');
+  loader.style.display = 'block'; // Show spinner
+
+  const itemKeyToRemove = button.dataset.itemKey;
+  if (!itemKeyToRemove) {
+    console.warn("❌ itemKey missing");
+    loader.style.display = 'none';
+    return;
+  }
+
+  try {
+    const cart = await fetch('/cart.js').then(res => res.json());
+    const items = cart.items;
+
+    console.log("🧾 Initial cart contents:", items);
+
+    const parentItem = items.find(item => item.key === itemKeyToRemove);
+    if (!parentItem) {
+      console.warn("❌ Parent item not found");
+      loader.style.display = 'none';
+      return;
+    }
+
+    const parentVariantId = parentItem.variant_id;
+
+    const updates = {
+      [parentItem.key]: 0
+    };
+
+    for (const item of items) {
+      if (item.properties?.['Linked to Saree'] && parseInt(item.properties['Linked to Saree']) === parentVariantId) {
+        console.log(`🗑 Marking ${item.title} for removal`);
+        updates[item.key] = 0;
+      }
+    }
+
+    console.log("📤 Sending batch key-based update:", updates);
+
+    const res = await fetch('/cart/update.js', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ updates })
+    });
+
+    if (!res.ok) {
+      const text = await res.text();
+      console.error("❌ cart/update.js failed:", res.status, text);
+    } else {
+      console.log("✅ All items removed");
+    }
+
+  } catch (err) {
+    console.error("🚨 Exception in cart/update.js", err);
+  } finally {
+    window.location.reload();
+  }
+}
+</script>
+
+
+
+
+<style>
+.t4s-mini_cart__remove-btn {
+  background-color: #ffffff;
+  color: #a00000;
+  border: 1.5px solid #a00000;
+  padding: 6px 14px;
+  border-radius: 6px;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background-color 0.2s ease, color 0.2s ease;
+}
+
+.t4s-mini_cart__remove-btn:hover {
+  background-color: #a00000;
+  color: #ffffff;
+}
+
+.t4s-mini_cart__remove-btn:disabled {
+  background-color: #eee;
+  color: #aaa;
+  border-color: #ccc;
+  cursor: not-allowed;
+}
+</style>          
