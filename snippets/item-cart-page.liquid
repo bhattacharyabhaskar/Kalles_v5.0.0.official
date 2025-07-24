@@ -106,7 +106,7 @@ async function handleCartRemove(event) {
   const button = event.currentTarget;
 
   const loader = document.getElementById('ivy-loader');
-  loader.style.display = 'block'; // Show loader
+  loader.style.display = 'block'; // Show spinner
 
   const itemKeyToRemove = button.dataset.itemKey;
   if (!itemKeyToRemove) {
@@ -121,43 +121,45 @@ async function handleCartRemove(event) {
 
     console.log("🧾 Initial cart contents:", items);
 
-    const parentIndex = items.findIndex(item => item.key === itemKeyToRemove);
-    if (parentIndex === -1) {
+    const parentItem = items.find(item => item.key === itemKeyToRemove);
+    if (!parentItem) {
       console.warn("❌ Parent item not found");
       loader.style.display = 'none';
       return;
     }
 
-    const parentVariantId = items[parentIndex].variant_id;
-    const linesToRemove = { [parentIndex + 1]: 0 };
+    const parentVariantId = parentItem.variant_id;
 
-    // Find all addons
-    items.forEach((item, idx) => {
+    const updates = {
+      [parentItem.key]: 0
+    };
+
+    for (const item of items) {
       if (item.properties?.['Linked to Saree'] && parseInt(item.properties['Linked to Saree']) === parentVariantId) {
-        console.log(`🗑 Marking ${item.title} for removal (line ${idx + 1})`);
-        linesToRemove[idx + 1] = 0;
+        console.log(`🗑 Marking ${item.title} for removal`);
+        updates[item.key] = 0;
       }
-    });
+    }
 
-    console.log("📤 Sending batch update:", linesToRemove);
+    console.log("📤 Sending batch key-based update:", updates);
 
-    const res = await fetch('/cart/change.js', {
+    const res = await fetch('/cart/update.js', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ updates: linesToRemove })
+      body: JSON.stringify({ updates })
     });
 
     if (!res.ok) {
       const text = await res.text();
-      console.error("❌ cart/change.js failed:", res.status, text);
+      console.error("❌ cart/update.js failed:", res.status, text);
     } else {
-      console.log("✅ Items removed");
+      console.log("✅ All items removed");
     }
 
   } catch (err) {
-    console.error("🚨 Exception while removing", err);
+    console.error("🚨 Exception in cart/update.js", err);
   } finally {
-    window.location.reload(); // or trigger drawer refresh
+    window.location.reload();
   }
 }
 </script>
