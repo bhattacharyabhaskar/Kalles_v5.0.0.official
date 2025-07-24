@@ -73,7 +73,7 @@
             {% if item.properties['Linked to Saree'] %}
               data-linked-to="{{ item.properties['Linked to Saree'] }}"
             {% endif %}
-            onclick="handleCartRemove(event, '{{ item.key }}')">
+            onclick="handleCartRemove(this)">
             Delete
           </button>
 
