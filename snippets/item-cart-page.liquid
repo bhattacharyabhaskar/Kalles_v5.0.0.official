@@ -69,14 +69,9 @@
             type="button"
             class="t4s-mini_cart__remove-btn"
             data-item-key="{{ item.key }}"
-            data-variant-id="{{ item.variant_id }}"
-            {% if item.properties['Linked to Saree'] %}
-              data-linked-to="{{ item.properties['Linked to Saree'] }}"
-            {% endif %}
-            onclick="handleCartRemove(this)">
+            onclick="handleCartRemove(event)">
             Delete
           </button>
-
 
         </wrapp-remove-item-oncart>
         {% comment %} {%- if item.product.variants.size > 1 or qty_rules or item.product.selling_plan_groups.size > 0 -%}
