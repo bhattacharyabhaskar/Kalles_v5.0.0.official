@@ -95,58 +95,68 @@
 </hdt-line-item>
 
 <script>
-async function handleCartRemove(button) {
+async function handleCartRemove(event, itemKeyToRemove) {
   console.log("🧩 handleCartRemove triggered");
 
-  const itemKeyToRemove = button.dataset.itemKey;
-  const variantId = parseInt(button.dataset.variantId);
+  try {
+    // Step 1: Fetch cart data
+    const cartData = await fetch('/cart.js').then(res => res.json());
+    const lineItems = cartData.items;
+    console.log("🧾 Initial cart contents:", lineItems);
 
-  // Step 1: Get current cart
-  const cartData = await fetch('/cart.js').then(res => res.json());
-  const lineItems = cartData.items;
-  console.log("🧾 Initial cart contents:", lineItems);
+    const lineItemsToRemove = [];
 
-  const lineItemsToRemove = {};
-
-  // Step 2: Find the parent line
-  const parentLineIndex = lineItems.findIndex(item => item.key === itemKeyToRemove);
-  if (parentLineIndex === -1) {
-    console.warn("❌ Parent item not found");
-    return;
-  }
-
-  const parentVariantId = lineItems[parentLineIndex].variant_id;
-  console.log("🆔 parentVariantId:", parentVariantId);
-
-  // Step 3: Mark parent for removal
-  lineItemsToRemove[parentLineIndex + 1] = 0;
-
-  // Step 4: Mark child items linked to parent
-  for (let i = 0; i < lineItems.length; i++) {
-    const linkedTo = lineItems[i].properties?.['Linked to Saree'];
-    if (linkedTo && parseInt(linkedTo) === parentVariantId) {
-      console.log(`🗑 Marking ${lineItems[i].title} for removal (line ${i + 1})`);
-      lineItemsToRemove[i + 1] = 0;
+    // Step 2: Find parent line index
+    const parentLineIndex = lineItems.findIndex(item => item.key === itemKeyToRemove);
+    if (parentLineIndex === -1) {
+      console.warn("❌ Parent item not found");
+      return;
     }
+
+    const parentVariantId = lineItems[parentLineIndex].variant_id;
+    console.log("🆔 parentVariantId:", parentVariantId);
+
+    // Step 3: Add parent line (Shopify is 1-based)
+    lineItemsToRemove.push(parentLineIndex + 1);
+
+    // Step 4: Find children linked to parent variant
+    for (let i = 0; i < lineItems.length; i++) {
+      const item = lineItems[i];
+      const linkedTo = item.properties?.['Linked to Saree'];
+      if (linkedTo && parseInt(linkedTo) === parentVariantId) {
+        console.log(`🗑 Marking ${item.title} for removal (line ${i + 1})`);
+        lineItemsToRemove.push(i + 1);
+      }
+    }
+
+    // Step 5: Sort line numbers in reverse (delete child first)
+    lineItemsToRemove.sort((a, b) => b - a);
+    console.log("📤 Will remove lines:", lineItemsToRemove);
+
+    // Step 6: Remove one line at a time
+    for (const line of lineItemsToRemove) {
+      const res = await fetch('/cart/change.js', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          line: line,
+          quantity: 0
+        })
+      });
+
+      if (!res.ok) {
+        const errorText = await res.text();
+        console.error(`❌ Failed to remove line ${line}:`, res.status, errorText);
+      }
+    }
+
+    // Step 7: Refresh page
+    window.location.reload();
+  } catch (error) {
+    console.error("🚨 Exception in handleCartRemove:", error);
   }
-
-  console.log("📤 Will remove lines:", lineItemsToRemove);
-
-  // Step 5: Bulk remove
-  const res = await fetch('/cart/change.js', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ updates: lineItemsToRemove })
-  });
-
-  if (!res.ok) {
-    const errText = await res.text();
-    console.error("❌ cart/change.js failed:", res.status, errText);
-    return;
-  }
-
-  // Step 6: Refresh the page
-  window.location.reload();
 }
 </script>
 
