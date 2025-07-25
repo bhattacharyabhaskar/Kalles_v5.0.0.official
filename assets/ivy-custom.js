@@ -1,22 +1,25 @@
-// ivy-custom.js
-
 async function handleCartRemove(event) {
   console.log("🧩 handleCartRemove triggered");
 
   const button = event.currentTarget;
-  const itemKeyToRemove = button.dataset.itemKey;
 
+  const itemKeyToRemove = button.dataset.itemKey;
   if (!itemKeyToRemove) {
     console.warn("❌ itemKey missing");
     return;
   }
 
-  const loader = document.getElementById('ivy-loader');
-  if (loader) loader.style.display = 'block';
+  const isFromDrawer = !!button.closest('.t4s-drawer');
 
   try {
+    // Show loader if any
+    const loader = document.getElementById('ivy-loader');
+    if (loader) loader.style.display = 'block';
+
+    // Fetch current cart
     const cart = await fetch('/cart.js').then(res => res.json());
     const items = cart.items;
+
     console.log("🧾 Initial cart contents:", items);
 
     const parentItem = items.find(item => item.key === itemKeyToRemove);
@@ -27,13 +30,13 @@ async function handleCartRemove(event) {
     }
 
     const parentVariantId = parentItem.variant_id;
-    const updates = { [parentItem.key]: 0 };
+
+    const updates = {
+      [parentItem.key]: 0
+    };
 
     for (const item of items) {
-      if (
-        item.properties?.['Linked to Saree'] &&
-        parseInt(item.properties['Linked to Saree']) === parentVariantId
-      ) {
+      if (item.properties?.['Linked to Saree'] && parseInt(item.properties['Linked to Saree']) === parentVariantId) {
         console.log(`🗑 Marking ${item.title} for removal`);
         updates[item.key] = 0;
       }
@@ -52,12 +55,22 @@ async function handleCartRemove(event) {
       console.error("❌ cart/update.js failed:", res.status, text);
     } else {
       console.log("✅ All items removed");
-    }
 
+      if (isFromDrawer) {
+        // Drawer context – refresh drawer content only
+        const drawerRes = await fetch('/?sections=cart-drawer');
+        const drawerData = await drawerRes.json();
+        const drawerContainer = document.querySelector('[data-drawer-id="cart_drawer"]'); // adjust if needed
+        if (drawerContainer && drawerData['cart-drawer']) {
+          drawerContainer.innerHTML = drawerData['cart-drawer'];
+          console.log("🔄 Drawer refreshed");
+        }
+      } else {
+        // Full cart page – reload
+        location.reload();
+      }
+    }
   } catch (err) {
-    console.error("🚨 Exception in cart/update.js", err);
-  } finally {
-    if (loader) loader.style.display = 'none';
-    window.location.reload(); // Works for both drawer and cart page
+    console.error("🚨 Exception in handleCartRemove:", err);
   }
 }
