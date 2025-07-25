@@ -85,12 +85,16 @@
                     <td class="hdt-cart-item__price hdt-page-cart__prices hdt-text-center" cart-data-title="{{ 'sections.cart.headings.price' | t }}">{%- render 'line-item-price', line_item: item, price_class: 'hdt-price-wrapp hdt-justify-center' -%}</td>
                     <td class="hdt-cart-item__quantity hdt-page-cart__quantity" cart-data-title="{{ 'sections.cart.headings.quantity' | t }}">
                       <hdt-quantity-wrapp class="hdt-quantity-wrapp hdt-quantity-cart-item hdt-s-text hdt-text-center hdt-relative">
+                        <wrapp-remove-item-oncart placement="none" class="{% if item.quantity == 1 %}hdt-inline-flex hdt-align-center no-js-hidden hdt-absolute hdt-p-0 hdt-top-0 hdt-left-0 hdt-text-start{% else %}hdt-hidden{% endif %}" data-index="{{ item.index | plus: 1 }}" form="id:{{ form_id }}"><a href="{{ routes.cart_change_url }}?line={{ item.index | plus: 1 }}&quantity=0" class="hdt-mini-cart__remove hdt-s-text"><svg viewBox="0 0 24 24" width="17"><use href="#icon-cart-remove"></use></svg></a></wrapp-remove-item-oncart>
                         <button class="hdt-quantity__button no-js-hidden is--minus hdt-absolute hdt-p-0 hdt-top-0 hdt-left-0 hdt-text-start{% if item.quantity == 1 %} hdt-hidden{% endif %}" name="minus" type="button">
                           <span class="sr-only">{{- 'products.product.quantity.decrease' | t: product: item.product.title | escape -}}</span>
+                          {%- render 'icon' with 'minus' -%}
                         </button>
+
                         <input class="quantity__input hdt-quantity-input hdt-text-center hdt-text-lg hdt-font-semibold hdt-p-0" type="number" name="updates[]" min="{{ quantity_rule.min }}" data-max="{{ max_qty }}" max="{{ max_qty }}" value="{{ item.quantity }}" aria-label="{{ 'products.product.quantity.input_label' | t: product: item.product.title | escape }}" data-index="{{ item.index | plus: 1 }}">
                         <button class="hdt-quantity__button no-js-hidden is--plus hdt-absolute hdt-p-0 hdt-top-0 hdt-right-0 hdt-text-end" name="plus" type="button">
                           <span class="sr-only">{{- 'products.product.quantity.increase' | t: product: item.product.title | escape -}}</span>
+                          {%- render 'icon' with 'plus' -%}
                         </button>
                       </hdt-quantity-wrapp>
                     </td>
@@ -299,94 +303,6 @@
     <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
   </symbol>
 </svg>
-
-   <script>
-      async function handleCartRemove(event) {
-        const button = event.currentTarget;
-        const loader = document.getElementById('ivy-loader');
-        if (loader) loader.style.display = 'block';
-    
-        const itemKeyToRemove = button.dataset.itemKey;
-        if (!itemKeyToRemove) {
-          console.warn("❌ itemKey missing");
-          if (loader) loader.style.display = 'none';
-          return;
-        }
-    
-        try {
-          const cart = await fetch('/cart.js').then(res => res.json());
-          const items = cart.items;
-    
-          const parentItem = items.find(item => item.key === itemKeyToRemove);
-          if (!parentItem) {
-            console.warn("❌ Parent item not found");
-            if (loader) loader.style.display = 'none';
-            return;
-          }
-    
-          const parentVariantId = parentItem.variant_id;
-          const updates = { [parentItem.key]: 0 };
-    
-          for (const item of items) {
-            if (item.properties?.['Linked to Saree'] && parseInt(item.properties['Linked to Saree']) === parentVariantId) {
-              updates[item.key] = 0;
-            }
-          }
-    
-          const res = await fetch('/cart/update.js', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ updates })
-          });
-    
-          if (!res.ok) {
-            const text = await res.text();
-            console.error("❌ cart/update.js failed:", res.status, text);
-          }
-    
-        } catch (err) {
-          console.error("🚨 Exception in cart/update.js", err);
-        } finally {
-          window.location.reload();
-        }
-      }
-    
-      document.addEventListener('DOMContentLoaded', function () {
-        document.body.addEventListener('click', function (e) {
-          if (e.target.closest('.t4s-mini_cart__remove-btn')) {
-            handleCartRemove(e);
-          }
-        });
-      });
-    </script>
-    
-    
-    <style>
-    .t4s-mini_cart__remove-btn {
-      background-color: #ffffff;
-      color: #a00000;
-      border: 1.5px solid #a00000;
-      padding: 6px 14px;
-      border-radius: 6px;
-      font-size: 13px;
-      font-weight: 600;
-      cursor: pointer;
-      transition: background-color 0.2s ease, color 0.2s ease;
-    }
-    
-    .t4s-mini_cart__remove-btn:hover {
-      background-color: #a00000;
-      color: #ffffff;
-    }
-    
-    .t4s-mini_cart__remove-btn:disabled {
-      background-color: #eee;
-      color: #aaa;
-      border-color: #ccc;
-      cursor: not-allowed;
-    }
-    </style>          
-
 {% schema %}
 {
   "name": "t:sections.main-cart.name",
