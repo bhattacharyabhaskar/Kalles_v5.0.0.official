@@ -46,13 +46,13 @@ async function handleCartRemove(event) {
     console.log('🧹 Items to delete:', linesToDelete);
 
     // Perform the cart update
-    const response = await fetch('/cart/change.js', {
+    const response = await fetch('/cart/update.js', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ updates: linesToDelete }),
     });
 
-    if (!response.ok) throw new Error('cart/change.js failed: ' + response.status);
+    if (!response.ok) throw new Error('cart/update.js failed: ' + response.status);
 
     console.log('✅ Deletion complete.');
 
