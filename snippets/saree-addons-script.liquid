@@ -36,15 +36,20 @@ document.addEventListener("DOMContentLoaded", function () {
   }
 
   function handleFloatingButtonVisibility() {
-    const isVisible = isElementInViewport(atcButton);
-    const isMobile = window.innerWidth < 768;
+  console.log("🟡 Scroll triggered");
 
-    if (!isVisible && isMobile) {
-      floatingBtnWrapper.style.display = "block";
-    } else {
-      floatingBtnWrapper.style.display = "none";
-    }
+  if (window.innerWidth >= 768) {
+    console.log("🧯 Not mobile, hiding");
+    floatingBtnWrapper.style.display = "none";
+    return;
   }
+
+  const inView = isElementInViewport(atcButton);
+  console.log("👀 ATC visible in viewport?", inView);
+
+  floatingBtnWrapper.style.display = inView ? "none" : "block";
+}
+
 
   document.addEventListener("scroll", handleFloatingButtonVisibility, { passive: true });
   window.addEventListener("resize", handleFloatingButtonVisibility);
