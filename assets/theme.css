@@ -4875,23 +4875,17 @@ hdt-drawer {
   left: 0;
   right: 0;
   z-index: 9999;
-  background: transparent;
   padding: 12px 16px;
+  background: transparent;
   display: none;
-  pointer-events: none; /* allows clicks only on button, not full bar */
+  pointer-events: none;
 }
 
 .ivy-floating-atc-wrapper button {
   width: 100%;
-  font-size: 1rem;
-  background-color: #8A1253;
-  color: #fff;
-  text-transform: uppercase;
-  border: none;
-  border-radius: 999px;
-  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.15);
   pointer-events: auto;
 }
+
 
 .ivy-floating-atc-wrapper button:hover {
   background-color: #750f46;
