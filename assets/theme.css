@@ -4860,3 +4860,26 @@ hdt-drawer {
     }
   }
 }
+/* ================ Product Page, floating button ================== */
+.ivy-floating-atc-wrapper {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  z-index: 999;
+  background: #fff;
+  padding: 12px 16px;
+  border-top: 1px solid #eee;
+  display: none;
+}
+
+.ivy-floating-atc-wrapper button {
+  width: 100%;
+  font-size: 1rem;
+}
+
+@media (min-width: 768px) {
+  .ivy-floating-atc-wrapper {
+    display: none !important;
+  }
+}
