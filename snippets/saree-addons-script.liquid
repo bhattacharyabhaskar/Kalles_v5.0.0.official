@@ -9,7 +9,6 @@ document.addEventListener("DOMContentLoaded", function () {
 
   const defaultBtnText = atcTextSpan?.textContent.trim() || "Add to Cart";
   const withAddonsText = "Add to Cart with Add-ons";
-  const defaultBg = atcButton?.style.backgroundColor || "";
   const addonBg = "#8A1253";
 
   if (!atcForm || !atcButton || !floatingBtn) return;
@@ -30,28 +29,34 @@ document.addEventListener("DOMContentLoaded", function () {
     cb.addEventListener("change", updateButtonState);
   });
 
-  // 📦 Scroll detection for floating button
-  function handleScroll() {
-    const rect = atcButton.getBoundingClientRect();
-    const fullyVisible = rect.top >= 0 && rect.bottom <= window.innerHeight;
+  // ✅ Robust scroll detection using viewport visibility
+  function isElementInViewport(el) {
+    const rect = el.getBoundingClientRect();
+    return rect.top >= 0 && rect.bottom <= window.innerHeight;
+  }
 
-    if (!fullyVisible && window.innerWidth < 768) {
+  function handleFloatingButtonVisibility() {
+    const isVisible = isElementInViewport(atcButton);
+    const isMobile = window.innerWidth < 768;
+
+    if (!isVisible && isMobile) {
       floatingBtnWrapper.style.display = "block";
     } else {
       floatingBtnWrapper.style.display = "none";
     }
   }
 
-  document.addEventListener("scroll", handleScroll, { passive: true });
-  window.addEventListener("resize", handleScroll);
+  document.addEventListener("scroll", handleFloatingButtonVisibility, { passive: true });
+  window.addEventListener("resize", handleFloatingButtonVisibility);
+  handleFloatingButtonVisibility(); // Run on load too
 
-  // 🖱️ Clicking floating = trigger main button
+  // 🖱️ Clicking floating = trigger main ATC
   floatingBtn.addEventListener("click", function (e) {
     e.preventDefault();
     atcButton.click();
   });
 
-  // 🖱️ Inject Add-ons before submitting
+  // 🧾 Inject add-ons before submit
   atcForm.addEventListener("submit", async function (e) {
     e.preventDefault();
 
@@ -85,6 +90,7 @@ document.addEventListener("DOMContentLoaded", function () {
     }
 
     atcForm.querySelectorAll(".addon-dynamic").forEach(el => el.remove());
+
     document.querySelectorAll(".addon-checkbox:checked").forEach(cb => {
       const vid = cb.dataset.variantId;
       if (!vid) return;
@@ -99,13 +105,13 @@ document.addEventListener("DOMContentLoaded", function () {
       });
     });
 
-    // Add main item last (shows first in cart)
+    // Add parent item last
     const parentIdInput = atcForm.querySelector('input[name="id"]');
     const parentQtyInput = atcForm.querySelector('input[name="quantity"]');
     if (parentIdInput) {
       const id = parentIdInput.value;
       const qty = parentQtyInput?.value || "1";
-      formData = new FormData();
+      const formData = new FormData();
       document.querySelectorAll(".addon-dynamic").forEach(i => formData.append(i.name, i.value));
       formData.append("items[][id]", id);
       formData.append("items[][quantity]", qty);
@@ -120,6 +126,7 @@ document.addEventListener("DOMContentLoaded", function () {
     }
   });
 
+  // 🧩 Inject add-ons before manual button click
   atcButton.addEventListener("click", () => {
     const parentVariantId =
       window.product?.selected_or_first_available_variant?.id ||
@@ -127,6 +134,7 @@ document.addEventListener("DOMContentLoaded", function () {
       ShopifyAnalytics?.meta?.selectedVariantId;
 
     if (!parentVariantId) return;
+
     atcForm.querySelectorAll(".addon-dynamic").forEach(el => el.remove());
 
     document.querySelectorAll(".addon-checkbox:checked").forEach(cb => {
@@ -144,8 +152,6 @@ document.addEventListener("DOMContentLoaded", function () {
     });
   });
 
-  // Initial state check
-  updateButtonState();
+  updateButtonState(); // Initial state check
 });
-
 </script>
