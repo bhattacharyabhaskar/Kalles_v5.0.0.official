@@ -7,7 +7,30 @@ document.addEventListener("DOMContentLoaded", function () {
   }
 
   const atcButton = atcForm.querySelector('button[type="submit"]');
+  const atcTextSpan = atcButton?.querySelector('.hdt-btn-atc_text');
   const debugPrefix = "🧩 ADDON:";
+
+  // 🆕 Track default button state
+  const defaultBtnText = atcTextSpan?.textContent.trim() || "Add to Cart";
+  const withAddonsText = "Add to Cart with Add-ons";
+  const defaultBg = atcButton?.style.backgroundColor || "";
+  const addonBg = "#8A1253"; // ← Customize this highlight color
+
+  function updateAtcVisualState() {
+    const anyAddonsChecked = document.querySelectorAll(".addon-checkbox:checked").length > 0;
+
+    if (atcTextSpan) {
+      atcTextSpan.textContent = anyAddonsChecked ? withAddonsText : defaultBtnText;
+    }
+
+    atcButton.style.backgroundColor = anyAddonsChecked ? addonBg : "";
+    atcButton.style.color = anyAddonsChecked ? "#fff" : "";
+  }
+
+  // 🧩 Set up listener for add-on toggles
+  document.querySelectorAll(".addon-checkbox").forEach(checkbox => {
+    checkbox.addEventListener("change", updateAtcVisualState);
+  });
 
   function removeOldAddonInputs() {
     atcForm.querySelectorAll(".addon-dynamic").forEach(el => el.remove());
