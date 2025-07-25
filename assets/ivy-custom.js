@@ -1,82 +1,92 @@
 async function handleCartRemove(event) {
   event.preventDefault();
+  console.log("🧾 handleCartRemove triggered");
 
   const button = event.currentTarget;
   const itemKey = button.dataset.itemKey;
-  const context = button.dataset.context || 'page';
+  const context = button.dataset.context || 'cart'; // default to 'cart' if not provided
+  console.log("🔑 Item key:", itemKey);
+  console.log("🧭 Context:", context);
 
-  if (!itemKey) {
-    console.warn("🚫 No itemKey found on button.");
-    return;
-  }
-
-  console.log(`🧾 handleCartRemove triggered`);
-  console.log(`🔑 Item key: ${itemKey}`);
-  console.log(`🧭 Context: ${context}`);
+  // Extract variant ID from key
+  const parentVariantId = itemKey.split(':')[0];
+  console.log("🔗 Parent Variant ID:", parentVariantId);
 
   try {
-    // Step 1: Fetch current cart state
-    const cart = await (await fetch('/cart.js')).json();
-    console.log(`📦 Cart fetched: ${cart.items.length} items`);
+    // Fetch current cart
+    const cart = await fetch('/cart.js').then(res => res.json());
+    console.log("📦 Cart fetched:", cart.items.length, "items");
 
-    // Step 2: Identify parent item
-    const parentItem = cart.items.find(item => item.key === itemKey);
-
-    if (!parentItem) {
-      console.warn("⚠️ Item not found in cart by key:", itemKey);
-      return;
-    }
-
-    const linkedId = parentItem.variant_id;
-    console.log(`🔗 Parent Variant ID: ${linkedId}`);
-    console.log(`🔍 Cart items with their 'Linked to Saree' values:`);
-
+    console.log("🔍 Cart items with their 'Linked to Saree' values:");
     cart.items.forEach(item => {
-      console.log(`- ${item.title} | ${item.key} | Linked to: ${item.properties?.['Linked to Saree'] || '❌ None'}`);
+      const link = item.properties?.['Linked to Saree'] || '❌ None';
+      console.log(`- ${item.title} | ${item.key} | Linked to: ${link}`);
     });
 
-    // Step 3: Identify all items to delete (parent + linked)
-    const keysToDelete = cart.items
-      .filter(item =>
-        item.key === itemKey ||
-        item.properties?.['Linked to Saree'] == linkedId
-      )
-      .map(item => ({ id: item.key, quantity: 0 }));
+    // Find all items to remove (parent or linked)
+    const itemsToDelete = cart.items.filter(item => {
+      return (
+        item.key === itemKey || 
+        item.properties?.['Linked to Saree'] === parentVariantId
+      );
+    });
 
-    console.log(`🧹 Items to delete:`, keysToDelete);
+    console.log("🧹 Items to delete:", itemsToDelete);
 
-    // Step 4: Fire delete requests
-    const deletePromises = keysToDelete.map(obj =>
-      fetch('/cart/change.js', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(obj),
-      })
-    );
+    // Construct the payload
+    const updates = {};
+    itemsToDelete.forEach(item => {
+      updates[item.line] = 0;
+    });
 
-    await Promise.all(deletePromises);
-    console.log(`✅ Deletion complete.`);
+    // Perform batch removal
+    const response = await fetch('/cart/change.js', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({ updates })
+    });
 
-    // Step 5: Refresh based on context
+    if (!response.ok) {
+      throw new Error(`cart/change.js failed: ${response.status}`);
+    }
+
+    console.log("✅ Deletion complete.");
+
+    // Refresh cart drawer or cart page
     if (context === 'drawer') {
-      const cartTrigger = document.querySelector('[data-drawer-options*="cart"]');
-      if (cartTrigger) {
-        console.log("🧼 Refreshing cart drawer...");
-        cartTrigger.click(); // Close
-        setTimeout(() => {
-          cartTrigger.click(); // Reopen
-          console.log("📂 Drawer reopened.");
-        }, 300);
-      } else {
-        console.warn("⚠️ Drawer trigger not found. Reloading page as fallback.");
-        location.reload();
-      }
+      console.log("🔄 Refreshing cart drawer...");
+
+      fetch('/?section_id=cart-drawer')
+        .then(res => res.text())
+        .then(html => {
+          const tempDOM = document.createElement('div');
+          tempDOM.innerHTML = html;
+
+          const newItems = tempDOM.querySelector('.hdt-mini-cart__items');
+          const currentItems = document.querySelector('.hdt-mini-cart__items');
+
+          if (newItems && currentItems) {
+            currentItems.innerHTML = newItems.innerHTML;
+            console.log("✅ Drawer content updated.");
+          } else {
+            console.warn("⚠️ Drawer content missing. Reloading...");
+            location.reload();
+          }
+        })
+        .catch(err => {
+          console.error("❌ Failed to refresh drawer:", err);
+          location.reload();
+        });
+
     } else {
-      console.log("🔄 Reloading cart page...");
+      console.log("🔁 Reloading cart page...");
       location.reload();
     }
 
-  } catch (error) {
-    console.error("❌ Error during item removal:", error);
+  } catch (err) {
+    console.error("❌ Error in handleCartRemove:", err);
+    location.reload();
   }
 }
