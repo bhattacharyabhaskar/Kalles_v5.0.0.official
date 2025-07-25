@@ -1,50 +1,60 @@
 async function handleCartRemove(event) {
-  event.preventDefault();
-  console.log("🧾 handleCartRemove triggered");
-
-  const button = event.currentTarget;
-  const itemKey = button.dataset.itemKey;
-  const context = button.dataset.context || 'cart';
-  console.log("🔑 Item key:", itemKey);
-  console.log("🧭 Context:", context);
-
-  const parentVariantId = itemKey.split(':')[0];
-  console.log("🔗 Parent Variant ID:", parentVariantId);
-
   try {
+    event.preventDefault();
+    console.log("🧾 handleCartRemove triggered");
+
+    const button = event.currentTarget;
+    const itemKey = button.dataset.itemKey;
+    const context = button.dataset.context || 'cart';
+    console.log("🔑 Item key:", itemKey);
+    console.log("🧭 Context:", context);
+
+    // Fetch the cart
     const cart = await fetch('/cart.js').then(res => res.json());
     console.log("📦 Cart fetched:", cart.items.length, "items");
 
+    // Find the clicked item
+    const clickedItem = cart.items.find(item => item.key === itemKey);
+    if (!clickedItem) {
+      console.warn("❌ Clicked item not found in cart.");
+      return;
+    }
+
+    // Determine parentVariantId
+    const parentVariantId = clickedItem.properties?.['Linked to Saree'] || clickedItem.variant_id.toString();
+    console.log("🔗 Parent Variant ID:", parentVariantId);
+
+    // Log all items with Linked to Saree
     console.log("🔍 Cart items with their 'Linked to Saree' values:");
     cart.items.forEach(item => {
-      const link = item.properties?.['Linked to Saree'] || '❌ None';
-      console.log(`- ${item.title} | ${item.key} | Linked to: ${link}`);
+      const linked = item.properties?.['Linked to Saree'] || '❌ None';
+      console.log(`- ${item.title} | ${item.key} | Linked to: ${linked}`);
     });
 
-    // Get items to delete with their line numbers (index + 1)
-    const itemsToDelete = cart.items.map((item, index) => {
-      if (
-        item.key === itemKey ||
-        item.properties?.['Linked to Saree'] === parentVariantId
-      ) {
-        return { line: index + 1, key: item.key };
+    // Determine which lines to delete
+    const linesToDelete = {};
+    cart.items.forEach((item, index) => {
+      const isParent = item.variant_id.toString() === parentVariantId;
+      const isChild = item.properties?.['Linked to Saree'] === parentVariantId;
+      if (isParent || isChild) {
+        linesToDelete[index + 1] = 0; // Shopify line index starts at 1
       }
-      return null;
-    }).filter(Boolean);
-
-    console.log("🧹 Items to delete:", itemsToDelete);
-
-    const updates = {};
-    itemsToDelete.forEach(item => {
-      updates[item.line] = 0;
     });
 
+    console.log("🧹 Items to delete:", linesToDelete);
+
+    if (Object.keys(linesToDelete).length === 0) {
+      console.warn("⚠️ No items matched for deletion.");
+      return;
+    }
+
+    // Make /cart/change.js request
     const response = await fetch('/cart/change.js', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json'
       },
-      body: JSON.stringify({ updates })
+      body: JSON.stringify({ updates: linesToDelete })
     });
 
     if (!response.ok) {
@@ -53,37 +63,21 @@ async function handleCartRemove(event) {
 
     console.log("✅ Deletion complete.");
 
+    // Refresh logic
     if (context === 'drawer') {
-      console.log("🔄 Refreshing cart drawer...");
-      fetch('/?section_id=cart-drawer')
-        .then(res => res.text())
-        .then(html => {
-          const tempDOM = document.createElement('div');
-          tempDOM.innerHTML = html;
-
-          const newItems = tempDOM.querySelector('.hdt-mini-cart__items');
-          const currentItems = document.querySelector('.hdt-mini-cart__items');
-
-          if (newItems && currentItems) {
-            currentItems.innerHTML = newItems.innerHTML;
-            console.log("✅ Drawer content updated.");
-          } else {
-            console.warn("⚠️ Drawer content missing. Reloading...");
-            location.reload();
-          }
-        })
-        .catch(err => {
-          console.error("❌ Failed to refresh drawer:", err);
-          location.reload();
-        });
-
+      const drawerTrigger = document.querySelector('[data-drawer-options*="cart"]');
+      if (drawerTrigger) {
+        drawerTrigger.click(); // Simulate native drawer refresh
+        console.log("🌀 Drawer refreshed.");
+      } else {
+        console.warn("⚠️ Drawer trigger not found. Reloading page as fallback.");
+        location.reload();
+      }
     } else {
-      console.log("🔁 Reloading cart page...");
       location.reload();
     }
 
-  } catch (err) {
-    console.error("❌ Error in handleCartRemove:", err);
-    location.reload();
+  } catch (error) {
+    console.error("❌ Error in handleCartRemove:", error);
   }
 }
