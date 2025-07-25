@@ -69,6 +69,54 @@
                 </tr>
               </thead>
               <tbody>
+                  {%- assign group_map = '' -%}
+                  {%- assign parent_ids = '' -%}
+                  
+                  {%- for item in cart.items -%}
+                    {%- assign parent_id = item.properties['Linked to Saree'] | default: item.variant_id | append: '' %}
+                  
+                    {%- assign group_key = 'group__' | append: parent_id %}
+                    {%- assign existing_entry = group_map | split: group_key | last | split: '||' | first %}
+                  
+                    {%- if group_map contains group_key -%}
+                      {%- assign updated_entry = existing_entry | append: ',' | append: item.key %}
+                      {%- assign group_map = group_map | replace: group_key | append: group_key | append: updated_entry | append: '||' %}
+                    {%- else -%}
+                      {%- assign group_map = group_map | append: group_key | append: item.key | append: '||' %}
+                      {%- assign parent_ids = parent_ids | append: parent_id | append: '|' %}
+                    {%- endif -%}
+                  {%- endfor -%}
+          
+                  {%- assign parent_ids = parent_ids | split: '|' | uniq -%}
+          
+                  {%- for parent_id in parent_ids -%}
+                    {%- if parent_id != '' -%}
+                      {%- assign group_key = 'group__' | append: parent_id %}
+                      {%- assign key_string = group_map | split: group_key | last | split: '||' | first %}
+                      {%- assign keys = key_string | split: ',' -%}
+                  
+                      <div class="cart-group" style="border: 3px solid #888; border-radius: 10px; padding: 20px; margin-bottom: 30px; ">
+                        {%- for key in keys -%}
+                          {%- assign item = cart.items | where: "key", key | first -%}
+                          {%- if item -%}
+                            {%- render 'item-cart-page',
+                              item: item,
+                              gift_pr_id: gift_pr_id,
+                              min_qty: min_qty,
+                              compare_tt_price: compare_tt_price,
+                              cart_change_url: cart_change_url,
+                              edit_item: edit_item,
+                              cur_code_enabled: cur_code_enabled,
+                              atc_ajax_enable: atc_ajax_enable,
+                              parent_id: parent_id
+                            -%}
+                          {%- endif -%}
+                        {%- endfor -%}
+                      </div>
+                    {%- endif -%}
+                  {%- endfor -%}
+
+                
                 {%- for item in cart.items -%}
                   {%- liquid
                     assign quantity_rule = item.variant.quantity_rule
