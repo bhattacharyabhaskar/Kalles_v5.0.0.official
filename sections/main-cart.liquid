@@ -95,7 +95,6 @@
                       {%- assign key_string = group_map | split: group_key | last | split: '||' | first %}
                       {%- assign keys = key_string | split: ',' -%}
                   
-                      <div class="cart-group" style="border: 3px solid #888; border-radius: 10px; padding: 20px; margin-bottom: 30px; ">
                         {%- for key in keys -%}
                           {%- assign item = cart.items | where: "key", key | first -%}
                           {%- if item -%}
@@ -128,7 +127,6 @@
                               </tr>
                           {%- endif -%}
                         {%- endfor -%}
-                      </div>
                     {%- endif -%}
                   {%- endfor -%}
               </tbody>
