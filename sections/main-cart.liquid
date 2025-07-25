@@ -114,15 +114,8 @@
                             -%}</td>
                               <td class="hdt-cart-item__price hdt-page-cart__prices hdt-text-center" cart-data-title="{{ 'sections.cart.headings.price' | t }}">
                             {%- render 'line-item-price',
-                              item: item,
-                              gift_pr_id: gift_pr_id,
-                              min_qty: min_qty,
-                              compare_tt_price: compare_tt_price,
-                              cart_change_url: cart_change_url,
-                              edit_item: edit_item,
-                              cur_code_enabled: cur_code_enabled,
-                              atc_ajax_enable: atc_ajax_enable,
-                              parent_id: parent_id
+                              line_item: item,
+                              price_class: 'hdt-price-wrapp hdt-justify-center'
                             -%}</td>
                     <td class="hdt-cart-item__quantity hdt-page-cart__quantity" cart-data-title="{{ 'sections.cart.headings.quantity' | t }}">
                           {{ item.quantity }}</td>
