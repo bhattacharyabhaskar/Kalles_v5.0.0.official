@@ -9,59 +9,66 @@ document.addEventListener("DOMContentLoaded", function () {
 
   const defaultBtnText = atcTextSpan?.textContent.trim() || "Add to Cart";
   const withAddonsText = "Add to Cart with Add-ons";
-  const addonBg = "#8A1253";
 
   if (!atcForm || !atcButton || !floatingBtn) return;
 
-  // 🔁 Keep both buttons in sync
+  // ✅ Clone visual styles from parent button
+  function copyParentStylesToFloating() {
+    const parentStyle = window.getComputedStyle(atcButton);
+    if (!parentStyle || !floatingBtn) return;
+
+    floatingBtn.style.backgroundColor = parentStyle.backgroundColor;
+    floatingBtn.style.color = parentStyle.color;
+    floatingBtn.style.border = parentStyle.border;
+    floatingBtn.style.fontSize = parentStyle.fontSize;
+    floatingBtn.style.fontWeight = parentStyle.fontWeight;
+    floatingBtn.style.borderRadius = parentStyle.borderRadius;
+    floatingBtn.style.padding = parentStyle.padding;
+    floatingBtn.style.textTransform = "uppercase";
+  }
+
+  // 🔁 Sync button text and style
   function updateButtonState() {
     const anyChecked = document.querySelectorAll(".addon-checkbox:checked").length > 0;
     const text = anyChecked ? withAddonsText : defaultBtnText;
 
     [atcTextSpan, floatingText].forEach(el => { if (el) el.textContent = text; });
-    [atcButton, floatingBtn].forEach(btn => {
-      btn.style.backgroundColor = anyChecked ? addonBg : "";
-      btn.style.color = anyChecked ? "#fff" : "";
-    });
+    copyParentStylesToFloating();
   }
 
   document.querySelectorAll(".addon-checkbox").forEach(cb => {
     cb.addEventListener("change", updateButtonState);
   });
 
-  // ✅ Robust scroll detection using viewport visibility
+  updateButtonState();
+
+  // ✅ Scroll detection using viewport visibility
   function isElementInViewport(el) {
     const rect = el.getBoundingClientRect();
     return rect.top >= 0 && rect.bottom <= window.innerHeight;
   }
 
   function handleFloatingButtonVisibility() {
-  console.log("🟡 Scroll triggered");
+    if (window.innerWidth >= 768) {
+      floatingBtnWrapper.style.display = "none";
+      return;
+    }
 
-  if (window.innerWidth >= 768) {
-    console.log("🧯 Not mobile, hiding");
-    floatingBtnWrapper.style.display = "none";
-    return;
+    const inView = isElementInViewport(atcButton);
+    floatingBtnWrapper.style.display = inView ? "none" : "block";
   }
-
-  const inView = isElementInViewport(atcButton);
-  console.log("👀 ATC visible in viewport?", inView);
-
-  floatingBtnWrapper.style.display = inView ? "none" : "block";
-}
-
 
   document.addEventListener("scroll", handleFloatingButtonVisibility, { passive: true });
   window.addEventListener("resize", handleFloatingButtonVisibility);
-  handleFloatingButtonVisibility(); // Run on load too
+  handleFloatingButtonVisibility();
 
-  // 🖱️ Clicking floating = trigger main ATC
+  // 🖱️ Floating button click triggers main button
   floatingBtn.addEventListener("click", function (e) {
     e.preventDefault();
     atcButton.click();
   });
 
-  // 🧾 Inject add-ons before submit
+  // 🧾 Add-on logic before submit
   atcForm.addEventListener("submit", async function (e) {
     e.preventDefault();
 
@@ -156,7 +163,5 @@ document.addEventListener("DOMContentLoaded", function () {
       });
     });
   });
-
-  updateButtonState(); // Initial state check
 });
 </script>
