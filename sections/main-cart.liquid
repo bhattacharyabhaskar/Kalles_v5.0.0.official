@@ -84,7 +84,9 @@
                     <td class="hdt-cart-item__product hdt-page-cart__infos hdt-text-start">{%- render 'item-cart-page', item: item, form_id: form_id -%}</td>
                     <td class="hdt-cart-item__price hdt-page-cart__prices hdt-text-center" cart-data-title="{{ 'sections.cart.headings.price' | t }}">{%- render 'line-item-price', line_item: item, price_class: 'hdt-price-wrapp hdt-justify-center' -%}</td>
                     <td class="hdt-cart-item__quantity hdt-page-cart__quantity" cart-data-title="{{ 'sections.cart.headings.quantity' | t }}">
-                      {{ item.quantity }}
+                      <hdt-quantity-wrapp class="hdt-quantity-wrapp hdt-quantity-cart-item hdt-s-text hdt-text-center hdt-relative">
+                          {{ item.quantity }}
+                      </hdt-quantity-wrapp>
                       {% comment %}
                       <hdt-quantity-wrapp class="hdt-quantity-wrapp hdt-quantity-cart-item hdt-s-text hdt-text-center hdt-relative">
                       
