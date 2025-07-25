@@ -4861,25 +4861,39 @@ hdt-drawer {
   }
 }
 /* ================ Product Page, floating button ================== */
-.ivy-floating-atc-wrapper {
-  position: fixed;
-  bottom: 0;
-  left: 0;
-  right: 0;
-  z-index: 999;
-  background: #fff;
-  padding: 12px 16px;
-  border-top: 1px solid #eee;
-  display: none;
-}
 
-.ivy-floating-atc-wrapper button {
-  width: 100%;
-  font-size: 1rem;
-}
 
 @media (min-width: 768px) {
   .ivy-floating-atc-wrapper {
     display: none !important;
   }
 }
+
+.ivy-floating-atc-wrapper {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  z-index: 9999;
+  background: transparent;
+  padding: 12px 16px;
+  display: none;
+  pointer-events: none; /* allows clicks only on button, not full bar */
+}
+
+.ivy-floating-atc-wrapper button {
+  width: 100%;
+  font-size: 1rem;
+  background-color: #8A1253;
+  color: #fff;
+  text-transform: uppercase;
+  border: none;
+  border-radius: 999px;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.15);
+  pointer-events: auto;
+}
+
+.ivy-floating-atc-wrapper button:hover {
+  background-color: #750f46;
+}
+
