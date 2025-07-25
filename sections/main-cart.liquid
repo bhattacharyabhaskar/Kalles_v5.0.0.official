@@ -99,7 +99,6 @@
                         {%- for key in keys -%}
                           {%- assign item = cart.items | where: "key", key | first -%}
                           {%- if item -%}
-                            <tr class="hdt-cart-item hdt-page-cart__item hdt-relative hdt-oh{% if item.variant.id == gift_wrap_pr_id or item.gift_card %} is-gift-wrap{% endif %}" id="CartItem-{{ item.index | plus: 1 }}">
                             <td class="hdt-cart-item__product hdt-page-cart__infos hdt-text-start">
                             {%- render 'item-cart-page',
                               item: item,
