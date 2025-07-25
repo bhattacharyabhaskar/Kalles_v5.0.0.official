@@ -1,76 +1,59 @@
 async function handleCartRemove(event) {
-  console.log("🧩 handleCartRemove triggered");
+  event.preventDefault();
 
   const button = event.currentTarget;
+  const itemKey = button.dataset.itemKey;
 
-  const itemKeyToRemove = button.dataset.itemKey;
-  if (!itemKeyToRemove) {
-    console.warn("❌ itemKey missing");
+  if (!itemKey) {
+    console.error("❌ No item key found.");
     return;
   }
 
-  const isFromDrawer = !!button.closest('.t4s-drawer');
+  // Show loading spinner on the button
+  button.classList.add('loading');
 
   try {
-    // Show loader if any
-    const loader = document.getElementById('ivy-loader');
-    if (loader) loader.style.display = 'block';
+    // Fetch the cart first to get all items
+    const cartResponse = await fetch('/cart.js');
+    const cartData = await cartResponse.json();
 
-    // Fetch current cart
-    const cart = await fetch('/cart.js').then(res => res.json());
-    const items = cart.items;
+    // Determine if it's a parent item
+    const parentItem = cartData.items.find(item => item.key === itemKey);
+    const linkedId = parentItem?.variant_id;
 
-    console.log("🧾 Initial cart contents:", items);
+    // Prepare list of keys to delete (parent + linked addons)
+    const keysToDelete = cartData.items
+      .filter(item => item.key === itemKey || item.properties?.['Linked to Saree'] == linkedId)
+      .map(item => ({ id: item.key, quantity: 0 }));
 
-    const parentItem = items.find(item => item.key === itemKeyToRemove);
-    if (!parentItem) {
-      console.warn("❌ Parent item not found");
-      if (loader) loader.style.display = 'none';
-      return;
-    }
+    const deletePromises = keysToDelete.map(obj =>
+      fetch('/cart/change.js', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ id: obj.id, quantity: obj.quantity }),
+      })
+    );
 
-    const parentVariantId = parentItem.variant_id;
+    await Promise.all(deletePromises);
 
-    const updates = {
-      [parentItem.key]: 0
-    };
+    // Determine context: Drawer or Page
+    const inDrawer = document.querySelector('cart-items-component') !== null;
 
-    for (const item of items) {
-      if (item.properties?.['Linked to Saree'] && parseInt(item.properties['Linked to Saree']) === parentVariantId) {
-        console.log(`🗑 Marking ${item.title} for removal`);
-        updates[item.key] = 0;
-      }
-    }
-
-    console.log("📤 Sending batch key-based update:", updates);
-
-    const res = await fetch('/cart/update.js', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ updates })
-    });
-
-    if (!res.ok) {
-      const text = await res.text();
-      console.error("❌ cart/update.js failed:", res.status, text);
-    } else {
-      console.log("✅ All items removed");
-
-      if (isFromDrawer) {
-        // Drawer context – refresh drawer content only
-        const drawerRes = await fetch('/?sections=cart-drawer');
-        const drawerData = await drawerRes.json();
-        const drawerContainer = document.querySelector('[data-drawer-id="cart_drawer"]'); // adjust if needed
-        if (drawerContainer && drawerData['cart-drawer']) {
-          drawerContainer.innerHTML = drawerData['cart-drawer'];
-          console.log("🔄 Drawer refreshed");
-        }
+    if (inDrawer) {
+      // Refresh cart drawer without closing
+      if (window.T4SThemeSP && window.T4SThemeSP.CartDrawer) {
+        window.T4SThemeSP.CartDrawer.updateCart(); // for T4S-based themes
       } else {
-        // Full cart page – reload
-        location.reload();
+        document.querySelector('[data-drawer-options*="cart"]')?.click(); // fallback
       }
+    } else {
+      // Reload cart page
+      location.reload();
     }
-  } catch (err) {
-    console.error("🚨 Exception in handleCartRemove:", err);
+
+  } catch (error) {
+    console.error("❌ Failed to remove item(s):", error);
+  } finally {
+    button.classList.remove('loading');
   }
 }
