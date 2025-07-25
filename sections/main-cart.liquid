@@ -117,8 +117,13 @@
                               line_item: item,
                               price_class: 'hdt-price-wrapp hdt-justify-center'
                             -%}</td>
-                    <td class="hdt-cart-item__quantity hdt-page-cart__quantity" cart-data-title="{{ 'sections.cart.headings.quantity' | t }}">
-                          {{ item.quantity }}</td>
+                              <td class="hdt-cart-item__quantity hdt-page-cart__quantity" cart-data-title="{{ 'sections.cart.headings.quantity' | t }}">
+                              {{ item.quantity }}</td>
+                              <td class="hdt-cart-item__total hdt-page_cart__total-price hdt-text-end hdt-s-text hdt-font-semibold" cart-data-title="{{ 'sections.cart.headings.total' | t }}">
+                            {%- render 'line-item-price',
+                              line_item: item,
+                              price_class: 'hdt-price-wrapp hdt-justify-center'
+                            -%}</td>
                           {%- endif -%}
                         {%- endfor -%}
                       </div>
