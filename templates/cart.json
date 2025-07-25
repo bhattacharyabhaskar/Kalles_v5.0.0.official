@@ -57,10 +57,10 @@
           "type": "btn_checkout",
           "settings": {
             "btn_style": "hdt-btn-accent",
-            "size": "m",
-            "icon": "none",
+            "size": "xs",
+            "icon": "arrow_right",
             "icon_position": "before",
-            "icon_height": 16,
+            "icon_height": 14,
             "icon_spacing": 5
           }
         },
