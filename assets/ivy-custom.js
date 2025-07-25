@@ -1,89 +1,81 @@
 async function handleCartRemove(event) {
+  event.preventDefault();
+
+  console.log("🧾 handleCartRemove triggered");
+
+  const button = event.currentTarget;
+  const itemKey = button.getAttribute("data-item-key");
+  const context = button.getAttribute("data-context") || "cart";
+
+  console.log("🔑 Item key:", itemKey);
+  console.log("🧭 Context:", context);
+
+  // Show loading spinner
+  button.disabled = true;
+  const originalHTML = button.innerHTML;
+  button.innerHTML = `<svg viewBox="0 0 24 24" width="17" height="17" class="spinner"><circle cx="12" cy="12" r="10" stroke="#555" stroke-width="2" fill="none" stroke-dasharray="31.4" stroke-linecap="round"><animateTransform attributeName="transform" type="rotate" dur="0.8s" repeatCount="indefinite" from="0 12 12" to="360 12 12"/></circle></svg>`;
+
   try {
-    console.log("🧾 handleCartRemove triggered");
-
-    const button = event.currentTarget;
-    const itemKey = button.dataset.itemKey;
-    const context = button.dataset.context || 'cart';
-
-    console.log("🔑 Item key:", itemKey);
-    console.log("🧭 Context:", context);
-
-    if (!itemKey) throw new Error("Missing item key");
-
-    // Extract variant ID from key
     const parentVariantId = itemKey.split(":")[0];
     console.log("🔗 Parent Variant ID:", parentVariantId);
 
-    // Show loading spinner (optional)
-    document.body.style.cursor = 'wait';
+    // Fetch the latest cart
+    const cart = await fetch("/cart.js").then((res) => res.json());
+    console.log("📦 Cart fetched:", cart.items.length, "items");
 
-    // Fetch current cart
-    const cartResponse = await fetch('/cart.js');
-    const cart = await cartResponse.json();
-    console.log(`📦 Cart fetched: ${cart.items.length} items`);
-
+    // Find all related items to delete
     console.log("🔍 Cart items with their 'Linked to Saree' values:");
     const itemsToRemove = {};
+
     cart.items.forEach((item, index) => {
-      const linkedTo = item.properties?.['Linked to Saree'] || null;
-      console.log(`- ${item.product_title} | ${item.key} | Linked to: ${linkedTo || '❌ None'}`);
+      const linkedTo = item.properties?.["Linked to Saree"] || null;
+      console.log(`- ${item.product_title} | ${item.key} | Linked to: ${linkedTo || "❌ None"}`);
 
       if (item.key === itemKey) {
-        console.log(`🗑 Marking ${item.product_title} for removal`);
+        console.log(`🗑 Marking ${item.product_title} (line ${index + 1}) for removal`);
+        itemsToRemove[index + 1] = 0;
+      } else if (linkedTo === parentVariantId) {
+        console.log(`🗑 Marking linked item ${item.product_title} (line ${index + 1}) for removal`);
         itemsToRemove[index + 1] = 0;
       }
-
-      // If clicked item is a parent, also remove its addons
-      if (item.key === itemKey && !linkedTo) {
-        cart.items.forEach((childItem, idx) => {
-          if (childItem.properties?.['Linked to Saree'] == parentVariantId) {
-            console.log(`🗑 Marking linked item ${childItem.product_title} for removal`);
-            itemsToRemove[idx + 1] = 0;
-          }
-        });
-      }
     });
-
-    if (Object.keys(itemsToRemove).length === 0) {
-      console.warn("⚠️ No items to remove.");
-      document.body.style.cursor = 'default';
-      return;
-    }
 
     console.log("🧹 Items to delete:", itemsToRemove);
 
-    const res = await fetch('/cart/update.js', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+    const response = await fetch("/cart/update.js", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Accept: "application/json",
+      },
       body: JSON.stringify({ updates: itemsToRemove }),
     });
 
-    if (!res.ok) {
-      throw new Error('cart/update.js failed: ' + res.status);
+    if (!response.ok) {
+      throw new Error(`cart/update.js failed: ${response.status}`);
     }
 
     console.log("✅ Deletion complete.");
 
-    // Refresh drawer or cart page
+    // Reload cart UI based on context
     if (context === "drawer") {
-      if (window.T4SThemeSP?.Drawer?.open) {
-        console.log("🔄 Refreshing drawer via T4SThemeSP.Drawer.open()");
-        window.T4SThemeSP.Drawer.open('[data-drawer-id="cart_drawer"]');
+      const drawerTrigger = document.querySelector('[data-drawer-options*="cart"]');
+      if (drawerTrigger) {
+        console.log("🔄 Reopening drawer after update");
+        drawerTrigger.click();
       } else {
-        console.warn("⚠️ T4S drawer API not available. Reloading as fallback.");
-        window.location.reload();
+        console.warn("⚠️ Drawer trigger not found. Reloading page as fallback.");
+        location.reload();
       }
     } else {
-      console.log("🔄 Reloading cart page");
-      window.location.reload();
+      location.reload();
     }
-
-  } catch (err) {
-    console.error("❌ Error in handleCartRemove:", err);
+  } catch (error) {
+    console.error("❌ Error in handleCartRemove:", error);
     alert("Something went wrong while removing the item(s). Please try again.");
-    window.location.reload();
   } finally {
-    document.body.style.cursor = 'default';
+    // Restore button state
+    button.disabled = false;
+    button.innerHTML = originalHTML;
   }
 }
