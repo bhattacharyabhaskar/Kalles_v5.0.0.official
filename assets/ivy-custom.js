@@ -84,7 +84,6 @@ async function handleCartRemove(event) {
     alert("Something went wrong while removing the item(s). Please try again.");
   }
 }
-<script>
 document.addEventListener("DOMContentLoaded", function () {
   const atcForm = document.querySelector('form[action="/cart/add"]');
   const atcButton = atcForm?.querySelector('button[type="submit"]');
@@ -271,5 +270,4 @@ document.addEventListener("DOMContentLoaded", function () {
     });
   });
 });
-</script>
 
