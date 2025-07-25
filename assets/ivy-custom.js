@@ -4,16 +4,14 @@ async function handleCartRemove(event) {
 
   const button = event.currentTarget;
   const itemKey = button.dataset.itemKey;
-  const context = button.dataset.context || 'cart'; // default to 'cart' if not provided
+  const context = button.dataset.context || 'cart';
   console.log("🔑 Item key:", itemKey);
   console.log("🧭 Context:", context);
 
-  // Extract variant ID from key
   const parentVariantId = itemKey.split(':')[0];
   console.log("🔗 Parent Variant ID:", parentVariantId);
 
   try {
-    // Fetch current cart
     const cart = await fetch('/cart.js').then(res => res.json());
     console.log("📦 Cart fetched:", cart.items.length, "items");
 
@@ -23,23 +21,24 @@ async function handleCartRemove(event) {
       console.log(`- ${item.title} | ${item.key} | Linked to: ${link}`);
     });
 
-    // Find all items to remove (parent or linked)
-    const itemsToDelete = cart.items.filter(item => {
-      return (
-        item.key === itemKey || 
+    // Get items to delete with their line numbers (index + 1)
+    const itemsToDelete = cart.items.map((item, index) => {
+      if (
+        item.key === itemKey ||
         item.properties?.['Linked to Saree'] === parentVariantId
-      );
-    });
+      ) {
+        return { line: index + 1, key: item.key };
+      }
+      return null;
+    }).filter(Boolean);
 
     console.log("🧹 Items to delete:", itemsToDelete);
 
-    // Construct the payload
     const updates = {};
     itemsToDelete.forEach(item => {
       updates[item.line] = 0;
     });
 
-    // Perform batch removal
     const response = await fetch('/cart/change.js', {
       method: 'POST',
       headers: {
@@ -54,10 +53,8 @@ async function handleCartRemove(event) {
 
     console.log("✅ Deletion complete.");
 
-    // Refresh cart drawer or cart page
     if (context === 'drawer') {
       console.log("🔄 Refreshing cart drawer...");
-
       fetch('/?section_id=cart-drawer')
         .then(res => res.text())
         .then(html => {
