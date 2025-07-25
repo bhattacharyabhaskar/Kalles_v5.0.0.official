@@ -113,14 +113,14 @@
     </div>
   {%- endif -%}
 </div>
-{% if product.type == "Saree" %}
-  {% render 'saree-addons-script' %}
-{% endif %}
 <div id="floating-atc-wrapper" class="ivy-floating-atc-wrapper" style="display:none;">
   <button id="floating-atc-button" class="hdt-product-form__submit hdt-btn hdt-btn-solid hdt-font-semibold">
     <span class="hdt-btn-atc_text">Add to Cart</span>
   </button>
 </div>
+{% if product.type == "Saree" %}
+  {% render 'saree-addons-script' %}
+{% endif %}
 
 {% schema %}
 {
