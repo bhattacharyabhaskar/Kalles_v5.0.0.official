@@ -122,8 +122,9 @@
                               <td class="hdt-cart-item__total hdt-page_cart__total-price hdt-text-end hdt-s-text hdt-font-semibold" cart-data-title="{{ 'sections.cart.headings.total' | t }}">
                             {%- render 'line-item-price',
                               line_item: item,
-                              price_class: 'hdt-price-wrapp hdt-justify-center'
-                            -%}</td>
+                              price_class: 'hdt-justify-end',
+                              get_total: true,
+                              show_unit_price: true -%}</td>
                           {%- endif -%}
                         {%- endfor -%}
                       </div>
