@@ -99,6 +99,7 @@
                         {%- for key in keys -%}
                           {%- assign item = cart.items | where: "key", key | first -%}
                           {%- if item -%}
+                            <td class="hdt-cart-item__product hdt-page-cart__infos hdt-text-start">
                             {%- render 'item-cart-page',
                               item: item,
                               gift_pr_id: gift_pr_id,
@@ -109,7 +110,7 @@
                               cur_code_enabled: cur_code_enabled,
                               atc_ajax_enable: atc_ajax_enable,
                               parent_id: parent_id
-                            -%}
+                            -%}</td>
                           {%- endif -%}
                         {%- endfor -%}
                       </div>
