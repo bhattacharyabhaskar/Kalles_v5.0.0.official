@@ -7,12 +7,16 @@ document.addEventListener("DOMContentLoaded", function () {
   const floatingBtn = document.getElementById("floating-atc-button");
   const floatingText = floatingBtn?.querySelector('.hdt-btn-atc_text');
 
-  const defaultBtnText = atcTextSpan?.textContent.trim() || "Add to Cart";
-  const withAddonsText = "Add to Cart with Add-ons";
-
   if (!atcForm || !atcButton || !floatingBtn) return;
 
-  // ✅ Clone visual styles from parent button
+  const defaultBtnText = atcTextSpan?.textContent.trim() || "Add to Cart";
+  const withAddonsText = "Add to Cart with Add-ons";
+  const defaultBg = window.getComputedStyle(atcButton).backgroundColor;
+  const defaultColor = window.getComputedStyle(atcButton).color;
+  const addonBg = "#8A1253";
+  const addonColor = "#ffffff";
+
+  // ✅ Clone styles from parent → floating
   function copyParentStylesToFloating() {
     const parentStyle = window.getComputedStyle(atcButton);
     if (!parentStyle || !floatingBtn) return;
@@ -27,22 +31,34 @@ document.addEventListener("DOMContentLoaded", function () {
     floatingBtn.style.textTransform = "uppercase";
   }
 
-  // 🔁 Sync button text and style
+  // 🔁 Update text + color for both buttons
   function updateButtonState() {
     const anyChecked = document.querySelectorAll(".addon-checkbox:checked").length > 0;
     const text = anyChecked ? withAddonsText : defaultBtnText;
 
-    [atcTextSpan, floatingText].forEach(el => { if (el) el.textContent = text; });
+    // Update text
+    if (atcTextSpan) atcTextSpan.textContent = text;
+    if (floatingText) floatingText.textContent = text;
+
+    // Update color
+    const bg = anyChecked ? addonBg : defaultBg;
+    const color = anyChecked ? addonColor : defaultColor;
+
+    atcButton.style.backgroundColor = bg;
+    atcButton.style.color = color;
+
+    // Now sync styles from parent to floating
     copyParentStylesToFloating();
   }
 
+  // ✅ Setup event listeners
   document.querySelectorAll(".addon-checkbox").forEach(cb => {
     cb.addEventListener("change", updateButtonState);
   });
 
-  updateButtonState();
+  updateButtonState(); // initial
 
-  // ✅ Scroll detection using viewport visibility
+  // ✅ Scroll detection
   function isElementInViewport(el) {
     const rect = el.getBoundingClientRect();
     return rect.top >= 0 && rect.bottom <= window.innerHeight;
@@ -62,13 +78,13 @@ document.addEventListener("DOMContentLoaded", function () {
   window.addEventListener("resize", handleFloatingButtonVisibility);
   handleFloatingButtonVisibility();
 
-  // 🖱️ Floating button click triggers main button
+  // ✅ Floating button triggers main click
   floatingBtn.addEventListener("click", function (e) {
     e.preventDefault();
     atcButton.click();
   });
 
-  // 🧾 Add-on logic before submit
+  // 🧾 Submit logic (no changes here — your existing logic continues)
   atcForm.addEventListener("submit", async function (e) {
     e.preventDefault();
 
@@ -138,7 +154,6 @@ document.addEventListener("DOMContentLoaded", function () {
     }
   });
 
-  // 🧩 Inject add-ons before manual button click
   atcButton.addEventListener("click", () => {
     const parentVariantId =
       window.product?.selected_or_first_available_variant?.id ||
