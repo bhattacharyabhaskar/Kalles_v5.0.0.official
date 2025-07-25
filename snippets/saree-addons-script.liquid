@@ -99,7 +99,20 @@ document.addEventListener("DOMContentLoaded", function () {
 
     injectAddonInputs(parentVariantId);
 
-    const formData = new FormData(atcForm);
+    // ✅ Custom FormData to ensure parent is added LAST (so appears FIRST in cart)
+    const formData = new FormData();
+    document.querySelectorAll(".addon-dynamic").forEach(input => {
+      formData.append(input.name, input.value);
+    });
+
+    // Add parent product at the end
+    const parentIdInput = atcForm.querySelector('input[name="id"]');
+    const parentQtyInput = atcForm.querySelector('input[name="quantity"]');
+
+    if (parentIdInput) {
+      formData.append("items[][id]", parentIdInput.value);
+      formData.append("items[][quantity]", parentQtyInput?.value || "1");
+    }
 
     try {
       const response = await fetch('/cart/add.js', {
