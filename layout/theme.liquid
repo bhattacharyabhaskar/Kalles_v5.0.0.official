@@ -82,6 +82,6 @@
       render 'structured-data'
     -%}
    {%- endunless -%}
-   {{ 'ivy-custom.js' | asset_url | script_tag }}
+    <script src="{{ 'ivy-custom.js' | asset_url }}" defer></script>
   </body>
 </html>
