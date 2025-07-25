@@ -65,14 +65,20 @@ document.addEventListener("DOMContentLoaded", function () {
   }
 
   function handleFloatingButtonVisibility() {
-    if (window.innerWidth >= 768) {
-      floatingBtnWrapper.style.display = "none";
-      return;
-    }
-
-    const inView = isElementInViewport(atcButton);
-    floatingBtnWrapper.style.display = inView ? "none" : "block";
+  if (window.innerWidth >= 768) {
+    floatingBtnWrapper.style.display = "none";
+    return;
   }
+
+  const inView = isElementInViewport(atcButton);
+  const scrolledPastFold = window.scrollY > window.innerHeight;
+
+  if (!inView && scrolledPastFold) {
+    floatingBtnWrapper.style.display = "block";
+  } else {
+    floatingBtnWrapper.style.display = "none";
+  }
+}
 
   document.addEventListener("scroll", handleFloatingButtonVisibility, { passive: true });
   window.addEventListener("resize", handleFloatingButtonVisibility);
