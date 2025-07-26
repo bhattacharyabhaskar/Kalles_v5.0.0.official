@@ -31,13 +31,18 @@
     assign money_price_max = price_max | money
   endif
 
-  assign on_sale = compare_at_price > price
+  assign on_sale = false
+  if compare_at_price and compare_at_price > price
+    assign on_sale = true
+  endif
+
   assign price_varies_item = ''
   if target == product and product.price_varies
     assign price_varies_item = ' hdt-price-item--range'
     assign money_price_clone = money_price
     assign money_price = 'products.product.price.from_price_html' | t: price: money_price_min
   endif
+
   unless un_no_pick
     if settings.price_varies_style == "1"
       if money_price_min == money_price_max
