@@ -1,6 +1,4 @@
-{%- comment -%}
-  Renders a list of product's price (nopick, sale)
-{%- endcomment -%}
+{%- comment -%} Renders a dynamic price block with strike-through support {%- endcomment -%}
 
 {%- liquid
   if show_compare_at_price == nil
@@ -73,76 +71,67 @@
 {%- assign global_final_price_cents = global_final_price_cents_raw | split: '<!-- FINAL PRICE START -->' | last | split: '<!-- FINAL PRICE END -->' | first | strip -%}
 {%- assign final_price = global_final_price_cents | plus: 0 -%}
 
-{%- assign show_strike = false -%}
-{%- if final_price < price -%}
-  {%- assign show_strike = true -%}
-{%- endif -%}
-
 <div class="hdt-price-wrapp {{ price_class }}{% if show_badges %} hdt-price--show-badge{% endif %}">
   <div class="hdt-price__container">
 
     {%- if use_variant == false and price_varies_item != '' -%}
-    <div class="hdt-price__nopick hdt-price__list">
-      {%- if product.quantity_price_breaks_configured? -%}
-        {%- if show_compare_at_price and compare_at_price -%}
-          {%- unless product.price_varies == false and product.compare_at_price_varies -%}
+      <div class="hdt-price__nopick hdt-price__list">
+        {%- if product.quantity_price_breaks_configured? -%}
+          {%- if show_compare_at_price and compare_at_price -%}
+            {%- unless product.price_varies == false and product.compare_at_price_varies -%}
+              <hdt-compare-at-price class="hdt-compare-at-price {%- if product.price_varies %} hdt-hidden{% endif %}">
+                <span class="sr-only sr-only--inline">{{ 'products.product.price.regular_price' | t }}</span>
+                <span class="hdt-money">{{ money_compare_at_price }}</span>
+              </hdt-compare-at-price>
+            {%- endunless -%}
+          {%- endif -%}
+          <span class="hdt-price hdt-price-item--range">
+            <span class="sr-only sr-only--inline">{{ 'products.product.price.regular_price' | t }}</span>
+            {{ 'products.product.volume_pricing.price_range_html' | t: minimum: money_price_min, maximum: money_price_max }}
+          </span>
+        {%- else -%}
+          {%- if compare_at_price and on_sale and show_compare_at_price -%}
             <hdt-compare-at-price class="hdt-compare-at-price {%- if product.price_varies %} hdt-hidden{% endif %}">
               <span class="sr-only sr-only--inline">{{ 'products.product.price.regular_price' | t }}</span>
               <span class="hdt-money">{{ money_compare_at_price }}</span>
             </hdt-compare-at-price>
-          {%- endunless -%}
+          {%- endif -%}
+          <hdt-price class="hdt-price{{ price_varies_item }}">
+            <span class="sr-only sr-only--inline">{{ 'products.product.price.sale_price' | t }}</span>
+            <span class="hdt-money"{% unless un_no_pick %} no-select-money{% endunless %}>{{ money_price }}</span>
+          </hdt-price>
         {%- endif -%}
-        <span class="hdt-price hdt-price-item--range">
-          <span class="sr-only sr-only--inline">{{ 'products.product.price.regular_price' | t }}</span>
-          {{ 'products.product.volume_pricing.price_range_html' | t: minimum: money_price_min, maximum: money_price_max }}
-        </span>
-      {%- else -%}
-        {%- if compare_at_price and on_sale and show_compare_at_price -%}
-          <hdt-compare-at-price class="hdt-compare-at-price {%- if product.price_varies %} hdt-hidden{% endif %}">
-            <span class="sr-only sr-only--inline">{{ 'products.product.price.regular_price' | t }}</span>
-            <span class="hdt-money">{{ money_compare_at_price }}</span>
-          </hdt-compare-at-price>
-        {%- endif -%}
-        <hdt-price class="hdt-price{{ price_varies_item }}">
-          <span class="sr-only sr-only--inline">{{ 'products.product.price.sale_price' | t }}</span>
-          <span class="hdt-money"{% unless un_no_pick %} no-select-money{% endunless %}>{{ money_price }}</span>
-        </hdt-price>
-      {%- endif -%}
-    </div>
+      </div>
     {%- endif -%}
 
-    <div class="hdt-price__sale hdt-price__list"{% if use_variant == false and price_varies_item != '' %} hidden{% endif %}>
-      {% if show_strike %}
-        <hdt-compare-at-price class="hdt-compare-at-price"{% if product.has_only_default_variant == false and form_id %} form="{{ form_id }}"{% endif %}>
-          <span class="sr-only sr-only--inline">{{ 'products.product.price.regular_price' | t }}</span>
-          <span class="hdt-money" style="text-decoration: line-through;">{{ money_price }}</span>
-        </hdt-compare-at-price>
-        <hdt-price class="hdt-price"{% if product.has_only_default_variant == false and form_id %} form="{{ form_id }}"{% endif %}>
-          <span class="sr-only sr-only--inline">{{ 'products.product.price.sale_price' | t }}</span>
-          <span class="hdt-money"{% unless un_no_pick %} no-select-money{% endunless %}>
-            {{ final_price | divided_by: 1 | money }}
-          </span>
-        </hdt-price>
-      {% else %}
-        <hdt-price class="hdt-price"{% if product.has_only_default_variant == false and form_id %} form="{{ form_id }}"{% endif %}>
-          <span class="sr-only sr-only--inline">{{ 'products.product.price.sale_price' | t }}</span>
-          <span class="hdt-money"{% unless un_no_pick %} no-select-money{% endunless %}>
-            {{ money_price_clone | default: money_price }}
-          </span>
-        </hdt-price>
-      {% endif %}
+    <div id="ivy-dynamic-price" class="hdt-price__sale hdt-price__list"
+         data-original-price="{{ price }}"
+         data-final-price="{{ final_price }}"{% if use_variant == false and price_varies_item != '' %} hidden{% endif %}>
+      <hdt-compare-at-price class="hdt-compare-at-price"{% if product.has_only_default_variant == false and form_id %} form="{{ form_id }}"{% endif %}>
+        <span class="sr-only sr-only--inline">{{ 'products.product.price.regular_price' | t }}</span>
+        <span class="hdt-money ivy-original-price" style="{% if final_price < price %}text-decoration: line-through;{% endif %}">
+          {{ money_price }}
+        </span>
+      </hdt-compare-at-price>
+
+      <hdt-price class="hdt-price"{% if product.has_only_default_variant == false and form_id %} form="{{ form_id }}"{% endif %}>
+        <span class="sr-only sr-only--inline">{{ 'products.product.price.sale_price' | t }}</span>
+        <span class="hdt-money ivy-final-price"{% unless final_price < price %} style="display: none;"{% endunless %}>
+          {{ final_price | divided_by: 100.0 | money }}
+        </span>
+      </hdt-price>
     </div>
 
     <hdt-unit-price class="hdt-unit-price"{% if form_id %} form="{{ form_id }}"{% endif %}{% if selected_variant.unit_price_measurement == nil %} hidden{% endif %}>
       <span class="sr-only">{{ 'products.product.price.unit_price' | t }}</span>
       <span class="hdt-hdt-price-item hdt-price-item--last">
-        <span class="hdt-money">{{- selected_variant.unit_price | money -}}</span>
+        <span class="hdt-money">{{ selected_variant.unit_price | money }}</span>
         <span aria-hidden="true">/</span>
         <span class="sr-only">&nbsp;{{ 'accessibility.unit_price_separator' | t }}&nbsp;</span>
         <span>
-          {%- if selected_variant.unit_price_measurement.reference_value != 1 -%}
-            {{- selected_variant.unit_price_measurement.reference_value -}}
-          {%- endif -%}
+          {% if selected_variant.unit_price_measurement.reference_value != 1 %}
+            {{ selected_variant.unit_price_measurement.reference_value }}
+          {% endif %}
           {{ selected_variant.unit_price_measurement.reference_unit }}
         </span>
       </span>
@@ -159,6 +148,37 @@
   -%}
 </div>
 
-{%- if show_volume_note and product.quantity_price_breaks_configured? -%}
+{% if show_volume_note and product.quantity_price_breaks_configured? %}
   <div class="hdt-volume-pricing-note">{{ 'products.product.volume_pricing.note' | t }}</div>
-{%- endif -%}
+{% endif %}
+
+<script>
+  document.addEventListener("variant:change", function (e) {
+    const variant = e.detail?.variant;
+    if (!variant) return;
+
+    const priceBlock = document.getElementById("ivy-dynamic-price");
+    const originalEl = priceBlock?.querySelector(".ivy-original-price");
+    const finalEl = priceBlock?.querySelector(".ivy-final-price");
+
+    if (!priceBlock || !originalEl || !finalEl) return;
+
+    // Replace this logic if you're fetching final price from server or metafields
+    const original = variant.price;
+    const final = Math.round(original * 0.9); // Example: 10% off
+
+    priceBlock.dataset.originalPrice = original;
+    priceBlock.dataset.finalPrice = final;
+
+    originalEl.textContent = Shopify.formatMoney(original);
+    finalEl.textContent = Shopify.formatMoney(final);
+
+    if (final < original) {
+      originalEl.style.textDecoration = "line-through";
+      finalEl.style.display = "inline";
+    } else {
+      originalEl.style.textDecoration = "none";
+      finalEl.style.display = "none";
+    }
+  });
+</script>
