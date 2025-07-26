@@ -154,29 +154,57 @@
 
 <script>
   document.addEventListener("variant:change", function (e) {
+    console.log("🧩 variant:change event detected");
+    
     const variant = e.detail?.variant;
-    if (!variant) return;
+    console.log("🔍 Variant object:", variant);
+
+    if (!variant) {
+      console.warn("❌ No variant data in event.");
+      return;
+    }
 
     const priceBlock = document.getElementById("ivy-dynamic-price");
-    const originalEl = priceBlock?.querySelector(".ivy-original-price");
-    const finalEl = priceBlock?.querySelector(".ivy-final-price");
+    if (!priceBlock) {
+      console.warn("❌ Could not find #ivy-dynamic-price element.");
+      return;
+    }
 
-    if (!priceBlock || !originalEl || !finalEl) return;
+    const originalEl = priceBlock.querySelector(".ivy-original-price");
+    const finalEl = priceBlock.querySelector(".ivy-final-price");
 
-    // Replace this logic if you're fetching final price from server or metafields
+    if (!originalEl) {
+      console.warn("❌ Could not find .ivy-original-price element.");
+      return;
+    }
+
+    if (!finalEl) {
+      console.warn("❌ Could not find .ivy-final-price element.");
+      return;
+    }
+
+    // Simulated final price: 10% discount (for debug purpose)
     const original = variant.price;
-    const final = Math.round(original * 0.9); // Example: 10% off
+    const final = Math.round(original * 0.9);
 
+    console.log(`💰 Original Price (cents): ${original}`);
+    console.log(`💸 Final Price (cents): ${final}`);
+
+    // Update attributes
     priceBlock.dataset.originalPrice = original;
     priceBlock.dataset.finalPrice = final;
 
+    // Update text
     originalEl.textContent = Shopify.formatMoney(original);
     finalEl.textContent = Shopify.formatMoney(final);
 
+    // Toggle strike-through and final price visibility
     if (final < original) {
+      console.log("✅ Showing strike-through and discounted price");
       originalEl.style.textDecoration = "line-through";
       finalEl.style.display = "inline";
     } else {
+      console.log("ℹ️ No discount – hiding final price");
       originalEl.style.textDecoration = "none";
       finalEl.style.display = "none";
     }
