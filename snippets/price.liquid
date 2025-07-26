@@ -1,14 +1,5 @@
 {%- comment -%}
   Renders a list of product's price (nopick, sale)
-  Accepts:
-  - product: {Object} Product Liquid object (required)
-  - use_variant: {Boolean}
-  - show_badges: {Boolean}
-  - price_class: {String}
-  - show_compare_at_price: {Boolean}
-  - show_volume_note: {Boolean}
-  - form_id: {String}
-  - un_no_pick: {Boolean}
 {%- endcomment -%}
 
 {%- liquid
@@ -16,7 +7,12 @@
     assign show_compare_at_price = true
   endif
   assign selected_variant = product.selected_or_first_available_variant
-  assign target = use_variant ? selected_variant : product
+
+  if use_variant
+    assign target = selected_variant
+  else
+    assign target = product
+  endif
 
   assign compare_at_price = target.compare_at_price
   assign price = target.price | default: 1999
@@ -93,7 +89,7 @@
         {%- endif -%}
         <span class="hdt-price hdt-price-item--range">
           <span class="sr-only sr-only--inline">{{ 'products.product.price.regular_price' | t }}</span>
-          {{- 'products.product.volume_pricing.price_range_html' | t: minimum: money_price_min, maximum: money_price_max -}}
+          {{ 'products.product.volume_pricing.price_range_html' | t: minimum: money_price_min, maximum: money_price_max }}
         </span>
       {%- else -%}
         {%- if compare_at_price and on_sale and show_compare_at_price -%}
