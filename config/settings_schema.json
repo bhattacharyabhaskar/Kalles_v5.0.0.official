@@ -2111,5 +2111,24 @@
         "content": "t:settings_schema.import_demo.content"
       }
     ]
-  }
+  },
+ {
+  "name": "Discount Configuration",
+  "settings": [
+    {
+      "type": "textarea",
+      "id": "general_discount_tiers",
+      "label": "General Discount Tiers",
+      "default": "7500:1000,20000:5%,30000:6%,50000:7%,80000:8%,100000:10%",
+      "info": "Enter general discount tiers in the format 'price:discount'. Use '%' for percentage-based discounts."
+    },
+    {
+      "type": "text",
+      "id": "suites_dresses_discount",
+      "label": "Suites & Dresses Discount",
+      "default": "10%",
+      "info": "Enter the discount for the Suites & Dresses collection (e.g., 10% or a fixed amount like 500)."
+    }
+  ]
+}
 ]
