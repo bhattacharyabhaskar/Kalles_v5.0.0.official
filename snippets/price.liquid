@@ -66,6 +66,40 @@
     endif
   endunless
 -%}
+{%- comment -%} Check if the product belongs to the "Sale" collection {%- endcomment -%}
+{% assign is_sale_collection = false %}
+{% assign is_suite_collection = false %}
+{% for collection in product.collections %}
+  {% if collection.handle == "sale" %}
+    {% assign is_sale_collection = true %}
+  {% endif %}
+  {% if collection.handle == "suits-dresses" %}
+    {% assign is_suite_collection = true %}
+  {% endif %}
+{% endfor %}
+
+{%- liquid
+  if compare_at_price >= price
+    assign is_sale = true 
+  endif
+
+  assign final_price = price
+-%}
+
+{%- comment -%} Include the discount-calculation snippet {%- endcomment -%}
+{%- capture global_final_price_cents_raw -%}
+  {% render 'discount-calculation', price_cents: price, is_sale_collection: is_sale_collection, is_suite_collection: is_suite_collection %}
+{%- endcapture -%}
+{%- assign global_final_price_cents = global_final_price_cents_raw | split: '<!-- FINAL PRICE START -->' | last | split: '<!-- FINAL PRICE END -->' | first | strip -%}
+
+
+{%- assign final_price = global_final_price_cents -%}
+
+{%- comment -%} Ensure no strike-through if compare_at_price equals final_price {%- endcomment -%}
+{%- if compare_at_price == final_price -%}
+  {%- assign is_sale = false -%}
+{%- endif -%}
+
 
 <div class="hdt-price-wrapp {{ price_class }}{% if show_badges %} hdt-price--show-badge{% endif %}">
   <div class="hdt-price__container">
