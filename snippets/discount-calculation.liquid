@@ -1,0 +1,48 @@
+{% if is_suite_collection %}
+  Debug: Applying suites-dresses discount from settings.suites_dresses_discount = {{ settings.suites_dresses_discount }}
+  
+  {% assign suites_discount = settings.suites_dresses_discount | default: "10%" %}
+  
+  {% if suites_discount contains '%' %}
+    {% assign discount_percentage = suites_discount | remove: '%' | plus: 0 %}
+    {% assign discount = price_cents | times: discount_percentage | divided_by: 100 %}
+  {% else %}
+    {% assign discount = suites_discount | plus: 0 %}
+  {% endif %}
+  
+  {% assign final_price_cents = price_cents | minus: discount %}
+  
+  Debug: Final Price for suites-dresses = {{ final_price_cents }}
+{% else %}
+  Debug: Fetching general discount tiers from settings.general_discount_tiers = {{ settings.general_discount_tiers }}
+  
+  {% assign discount_tiers_raw = settings.general_discount_tiers | default: "7500:1000,20000:5%,30000:6%,50000:7%,80000:8%,100000:10%" %}
+  {% assign discount_tiers = discount_tiers_raw | split: ',' %}
+  
+  {% assign final_price_cents = price_cents %}
+  {% for tier in discount_tiers %}
+    {% assign tier_parts = tier | split: ':' %}
+    {% assign tier_price = tier_parts[0] | strip | plus: 0 %}
+    {% assign tier_discount = tier_parts[1] | strip %}
+    
+    {% if price_cents >= tier_price %}
+      {% if tier_discount contains '%' %}
+        {% assign discount_percentage = tier_discount | remove: '%' | plus: 0 %}
+        {% assign discount = price_cents | times: discount_percentage | divided_by: 100 %}
+      {% else %}
+        {% assign discount = tier_discount | plus: 0 %}
+      {% endif %}
+      {% if is_sale_collection %}
+      {% else %}
+          {% assign final_price_cents = price_cents | minus: discount %}
+      {% endif %} 
+      Debug: Matching tier found (price_cents >= {{ tier_price }}) with discount = {{ discount }}, final_price_cents = {{ final_price_cents }}
+    {% endif %}
+  {% endfor %}
+{% endif %}
+  
+<!-- DEBUG END -->
+
+<!-- FINAL PRICE START -->
+{{ final_price_cents }}
+<!-- FINAL PRICE END -->
