@@ -117,7 +117,7 @@
       <hdt-price class="hdt-price"{% if product.has_only_default_variant == false and form_id %} form="{{ form_id }}"{% endif %}>
         <span class="sr-only sr-only--inline">{{ 'products.product.price.sale_price' | t }}</span>
         <span class="hdt-money ivy-final-price"{% unless final_price < price %} style="display: none;"{% endunless %}>
-          {{ final_price | divided_by: 100.0 | money }}
+          {{ final_price | divided_by: 1 | money }}
         </span>
       </hdt-price>
     </div>
