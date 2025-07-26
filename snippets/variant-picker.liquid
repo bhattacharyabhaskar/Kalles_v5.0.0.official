@@ -79,6 +79,7 @@
           {%- endif -%}
         {%- endif -%}
       {%- endcapture -%}
+test>>>> {{ product.variants | json }}
 
       <fieldset class="hdt-product-form__input is-style-{{ option_type }}" type="{% if option_type == 'color' %}{{ block.settings.color_picker_type }}{% else %}{{ block.settings.picker_type }}{% endif %}" data-index="{{ forloop.index0 }}">
         <legend class="hdt-product-form__label"><span>{{ option.name }}{% unless hide_update_value %}: <span update-value>{{ selected_value | default: choose_an_option }}</span>{% endunless %}</span> {{ btn_size_chart }}</legend>
@@ -152,7 +153,7 @@
 {%- endfor -%}
 
 {%- assign updated_variants = updated_variants | append: ']' -%}
-test>>>> {{ updated_variants | json }}
+test>>>> {{ product.variants | json }}
     <script type="application/json" data-variants-json>{% if hide_sold_out %}{{ product.variants | where: 'available' | json }}{% else %}{{ product.variants | json }}{% endif %}</script>
     {%- comment %}<script type="application/json" data-options-json>{{ product.options_with_values | json }}</script>{% endcomment -%}
   </hdt-variant-picker>
