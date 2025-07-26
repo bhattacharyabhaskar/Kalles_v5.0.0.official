@@ -101,7 +101,58 @@
       </fieldset>
 
     {%- endfor -%}
-    <script type="application/json" data-variants-json>{% if hide_sold_out %}{{ product.variants | where: 'available' | json }}{% else %}{{ product.variants | json }}{% endif %}</script>
+
+{%- for variant in product.variants -%}
+  {%- assign id = variant.id -%}
+  {%- assign title = variant.title -%}
+  {%- assign option1 = variant.option1 -%}
+  {%- assign price_cents = variant.price -%}
+  {% comment %}
+  {%- assign price_cents_with_cart = variant.price | plus: adjusted_cart_total -%}
+  {% endcomment %}
+  {%- assign compare_at_price_cents = variant.compare_at_price -%}
+  {%- assign inventory_quantity = variant.inventory_quantity -%}
+  {%- assign inventory_management = variant.inventory_management -%}
+  {%- assign options = variant.options | json -%}
+
+
+{%- capture global_final_price_cents_raw -%}
+  {% render 'discount-calculation', price_cents: price_cents, is_sale_collection: is_sale_collection, is_suite_collection: is_suite_collection %}
+{%- endcapture -%}
+
+{%- assign global_final_price_cents = global_final_price_cents_raw | split: '<!-- FINAL PRICE START -->' | last | split: '<!-- FINAL PRICE END -->' | first | strip -%}
+
+{%- assign final_price_cents = global_final_price_cents -%}
+
+
+  {%- assign updated_variant = '{' | append: '"id": ' | append: id | append: ',' -%}
+  {%- assign updated_variant = updated_variant | append: '"title": "' | append: title | append: '",' -%}
+  {%- assign updated_variant = updated_variant | append: '"option1": "' | append: option1 | append: '",' -%}
+  {%- assign updated_variant = updated_variant | append: '"price": ' | append: final_price_cents | append: ',' -%}
+  {%- assign updated_variant = updated_variant | append: '"compare_at_price": ' | append: compare_at_price_cents | append: ',' -%}
+  {%- assign updated_variant = updated_variant | append: '"inventory_quantity": ' | append: inventory_quantity | append: ',' -%}
+  {%- assign updated_variant = updated_variant | append: '"inventory_management": "' | append: inventory_management | append: '",' -%}
+  {%- assign updated_variant = updated_variant | append: '"options": ' | append: options | append: ',' -%}
+  {%- assign updated_variant = updated_variant | append: '"requires_shipping": ' | append: variant.requires_shipping | append: ',' -%}
+  {%- assign updated_variant = updated_variant | append: '"taxable": ' | append: variant.taxable | append: ',' -%}
+  {%- assign updated_variant = updated_variant | append: '"available": ' | append: variant.available | append: ',' -%}
+  {%- assign updated_variant = updated_variant | append: '"sku": "' | append: variant.sku | append: '",' -%}
+  {%- assign updated_variant = updated_variant | append: '"weight": ' | append: variant.weight | append: ',' -%}
+  {%- assign updated_variant = updated_variant | append: '"name": "' | append: variant.name | append: '",' -%}
+  {%- assign updated_variant = updated_variant | append: '"public_title": "' | append: variant.public_title | append: '",' -%}
+  {%- assign updated_variant = updated_variant | append: '"barcode": "' | append: variant.barcode | append: '"' -%}
+  {%- assign updated_variant = updated_variant | append: '}' -%}
+
+
+  {%- if forloop.first -%}
+    {%- assign updated_variants = '[' | append: updated_variant -%}
+  {%- else -%}
+    {%- assign updated_variants = updated_variants | append: ',' | append: updated_variant -%}
+  {%- endif -%}
+{%- endfor -%}
+
+{%- assign updated_variants = updated_variants | append: ']' -%}
+    <script type="application/json" data-variants-json>{% if hide_sold_out %}{{ product.variants | where: 'available' | json }}{% else %}{{ updated_variants }}{% endif %}</script>
     {%- comment %}<script type="application/json" data-options-json>{{ product.options_with_values | json }}</script>{% endcomment -%}
   </hdt-variant-picker>
   <noscript class="product-form__noscript-wrapper-{{ section.id }}">
