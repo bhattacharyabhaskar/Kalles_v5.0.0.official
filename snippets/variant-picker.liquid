@@ -152,7 +152,8 @@
 {%- endfor -%}
 
 {%- assign updated_variants = updated_variants | append: ']' -%}
-    <script type="application/json" data-variants-json>{% if hide_sold_out %}{{ product.variants | where: 'available' | json }}{% else %}{{ updated_variants }}{% endif %}</script>
+{{ product.variants | json }}
+    <script type="application/json" data-variants-json>{% if hide_sold_out %}{{ product.variants | where: 'available' | json }}{% else %}{{ product.variants | json }}{% endif %}</script>
     {%- comment %}<script type="application/json" data-options-json>{{ product.options_with_values | json }}</script>{% endcomment -%}
   </hdt-variant-picker>
   <noscript class="product-form__noscript-wrapper-{{ section.id }}">
