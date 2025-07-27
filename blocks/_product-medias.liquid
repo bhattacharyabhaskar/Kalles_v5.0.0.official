@@ -30,14 +30,18 @@
   assign first_3d_model = models | first
 %}
 
-{%- if product.type == 'Saree' -%}
-  {% assign fabric_value = product.metafields.saree.fabric_type | metafield_text %}
-{%- endif -%}
-{%- if fabric_value contains 'Silk Mark Certified' -%}
+{% assign fabric_value = product.metafields.custom.fabric_type.value %}
+
+<!-- DEBUG: Product type = {{ product.type }} -->
+<!-- DEBUG: Fabric value = {{ fabric_value }} -->
+
+{% if product.type == 'Saree' and fabric_value contains 'Silk Mark Certified' %}
+  <!-- ✅ DEBUG: Silk Mark badge should show -->
   <div class="ivy-badge-logo-left">
-      <img src="https://cdn.shopify.com/s/files/1/1469/7362/files/Silk-Mark.png?v=1702234752" alt="Silk Mark Certified" width="80" height="80">
+    <img src="https://cdn.shopify.com/s/files/1/1469/7362/files/Silk-Mark.png?v=1702234752" alt="Silk Mark Certified" width="80" height="80">
   </div>
-{%- endif -%}
+{% endif %}
+
 <div class="hdt-product-media-wrapps hdt-group-block hdt-s-gradient hdt-group-block--{{ block.id }}">
   {%- if product != blank -%}
     {%- capture start_index -%}
