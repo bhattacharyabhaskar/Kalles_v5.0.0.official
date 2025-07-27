@@ -173,6 +173,13 @@
             "title": "DESCRIPTION"
           }
         },
+        "tab_liquid_4AQzzK": {
+          "type": "tab_liquid",
+          "settings": {
+            "title": "MORE INFO",
+            "custom_liquid": "{% if product.type == 'Saree' or product.type == 'Stole' or product.type == 'Dress'%}\n\t{% assign sareeinstructions = product.metafields.saree %} \n\t{% assign sareeinstructions1 = product.metafields.products %}\n{% assign sareeinstructions2 = product.metafields.custom_fields %}\n\n    {% if sareeinstructions.occassion.value.size > 0 %}\n\t\t<ul style=\"list-style-type: square; margin-bottom: auto;\">\n    <li> <strong>Occasions:</strong>&nbsp;\n\n{% for item in sareeinstructions.occassion.value -%}{{ item }}{% if forloop.last == true %}{% else %},&nbsp;{% endif %} {%- endfor %}</li>\n</ul>\n\t{% endif %}\n    {% if sareeinstructions.fabric_type.value.size > 0 %}\n\t\t<ul style=\"list-style-type: square; margin-bottom: auto;\">\n    <li> <strong>Fabric Type:</strong>&nbsp;{% for item in sareeinstructions.fabric_type.value -%}{{ item }}{% if forloop.last == true %}{% else %},&nbsp;{% endif %} {%- endfor %}</li>\n</ul>\n\t{% endif %}\n\t{% if sareeinstructions.new_work.value.size > 0 %}\n\t\t<ul style=\"list-style-type: square; margin-bottom: auto;\">\n    <li> <strong>Work:</strong>&nbsp;{% for item in sareeinstructions.new_work.value -%}{{ item }}{% if forloop.last == true %}{% else %},&nbsp;{% endif %}{%- endfor %}</li>\n</ul>\n\t{% endif %}\n\t{% if sareeinstructions.BlousePiece.size > 0 %}\n\t\t<ul style=\"list-style-type: square; margin-bottom: auto;\">\n    <li> <strong>Blouse Piece:</strong>&nbsp;{{ sareeinstructions.BlousePiece }}</li>\n</ul>\n\t{% endif %}\n\t{% if sareeinstructions.FallPicco.size > 0 %}\n\t\t<ul style=\"list-style-type: square; margin-bottom: auto;\">\n    <li> <strong>Fall / Pico:</strong>&nbsp;{{ sareeinstructions.FallPicco }}</li>\n</ul>\n\t{% endif %}\n\t{% if sareeinstructions.occassion.size > 0 %}\n\t\t<ul style=\"list-style-type: square; margin-bottom: auto;\">\n    <li> <strong>Occassion:</strong>&nbsp;{{ sareeinstructions.occassion }}</li>\n</ul>\n\t{% endif %}\n\t{% if sareeinstructions1.region.size > 0 %}\n\t\t<ul style=\"list-style-type: square; margin-bottom: auto;\">\n    <li> <strong>Region:</strong>&nbsp;{{ sareeinstructions1.region }}</li>\n</ul>\n\t{% endif %}\n\t{% if sareeinstructions2.length!= null%}\n\t\t<ul style=\"list-style-type: square; margin-bottom: auto;\">\n    <li> <strong>Length:</strong>&nbsp;{{ sareeinstructions2.length.value }} / {{ sareeinstructions2.length.value.value | times:2.54 |round:2}} centimeters (cm)</li>\n</ul>\n\t{% endif %}\n\t{% if sareeinstructions2.width!= null%}\n\t\t<ul style=\"list-style-type: square; margin-bottom: auto;\">\n    <li> <strong>Width:</strong>&nbsp;{{ sareeinstructions2.width.value }} / {{ sareeinstructions2.width.value.value | times:2.54 |round:2}} centimeters (cm) </li>\n</ul>\n\t{% endif %}\n{% if product.variants.size > 1 %}\n  {% for variant in product.variants %}\n    {% if variant.weight > 0 %}\n      <ul style=\"list-style-type: square; margin-bottom: auto;\">\n        <li><strong>Weight:</strong>&nbsp;{{ variant.weight | weight_with_unit }} / {{ variant.weight | times: 0.001 | round: 2 }} Kilograms</li>\n      </ul>\n      {% break %}\n    {% endif %}\n  {% endfor %}\n{% else %}\n  {% assign variant = product.variants.first %}\n  {% if variant.weight > 0 %}\n    <ul style=\"list-style-type: square; margin-bottom: auto;\">\n      <li><strong>Weight:</strong>&nbsp;{{ variant.weight | weight_with_unit }} / {{ variant.weight | times: 0.001 | round: 2 }} Kilograms</li>\n    </ul>\n  {% endif %}\n{% endif %}\n\n{% endif %}\n{% if product.title contains 'Bangladesh' %}\n<ul style=\"list-style-type: square; margin-bottom: auto;\">\n<li><strong>Country of Origin:</strong>&nbsp;Bangladesh</li>\n</ul>\n{% else %}\n<ul style=\"list-style-type: square; margin-bottom: auto;\">\n<li><strong>Country of Origin:</strong>&nbsp;India</li>\n</ul>\n{% endif %}"
+          }
+        },
         "tab_add_HXf3yk": {
           "type": "tab_add",
           "settings": {
@@ -190,6 +197,7 @@
       },
       "block_order": [
         "tab_des_tKqkJj",
+        "tab_liquid_4AQzzK",
         "tab_add_HXf3yk",
         "tab_html_7dKb7L"
       ],
