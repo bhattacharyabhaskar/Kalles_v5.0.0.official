@@ -272,51 +272,49 @@ document.addEventListener("DOMContentLoaded", function () {
 });
 
 function getLiquidCalculatedPriceCents() {
-  const commentMatch = document.body.innerHTML.match(/<!-- FINAL PRICE START -->([\s\S]*?)<!-- FINAL PRICE END -->/);
-
-  if (commentMatch && commentMatch[1]) {
-    const parsed = parseInt(commentMatch[1].trim(), 10);
-    console.log("✅ Found final price from Liquid comment:", parsed);
-    return parsed;
+  console.log("🔍 Scanning document for final price comment block...");
+  const match = document.body.innerHTML.match(/<!-- FINAL PRICE START -->([\s\S]*?)<!-- FINAL PRICE END -->/);
+  if (match && match[1]) {
+    const value = parseInt(match[1].trim(), 10);
+    console.log("✅ Found Liquid final price:", value);
+    return value;
+  } else {
+    console.warn("❌ Could not locate final price comment block in DOM.");
+    return null;
   }
-
-  // Fallback to data attribute
-  const container = document.querySelector("#ivy-dynamic-price");
-  if (container?.dataset?.finalPrice) {
-    const parsed = parseInt(container.dataset.finalPrice, 10);
-    console.log("🔁 Using data-final-price fallback:", parsed);
-    return parsed;
-  }
-
-  console.warn("❌ Could not determine final price.");
-  return null;
 }
 
-
-document.addEventListener('variant:change', (e) => {
+document.addEventListener('variant:change', e => {
   console.log("🟡 variant:change event triggered");
 
   setTimeout(() => {
     const variant = e.detail?.variant;
     if (!variant) {
-      console.warn("⚠️ No variant data found in event.");
+      console.warn("❌ No variant data found.");
       return;
     }
 
     console.log("📦 Variant data:", variant);
-    const compareAtPrice = variant.compare_at_price;
-    const finalPrice = getLiquidCalculatedPriceCents();
 
+    // Try to read from comment block first
+    let finalPrice = getLiquidCalculatedPriceCents();
+
+    // Fallback to DOM dataset if comment not found
+    if (finalPrice === null) {
+      const container = document.querySelector('#ivy-dynamic-price');
+      if (container?.dataset?.finalPrice) {
+        finalPrice = parseInt(container.dataset.finalPrice, 10);
+        console.log("🔁 Using data-final-price fallback:", finalPrice);
+      }
+    }
+
+    const compareAtPrice = variant.compare_at_price;
     const priceContainer = document.querySelector('#ivy-dynamic-price');
     console.log("🧩 priceContainer:", priceContainer);
 
-    if (!priceContainer) {
-      console.warn("❌ #ivy-dynamic-price container not found.");
-      return;
-    }
-
-    const originalEl = priceContainer.querySelector('.ivy-original-price .money');
-    const finalEl = priceContainer.querySelector('.ivy-final-price .money');
+    // Updated selectors:
+    const originalEl = priceContainer?.querySelector('.ivy-original-price')?.querySelector('.money');
+    const finalEl = priceContainer?.querySelector('.ivy-final-price')?.querySelector('.money');
 
     console.log("💲 originalEl:", originalEl);
     console.log("💲 finalEl:", finalEl);
@@ -327,14 +325,12 @@ document.addEventListener('variant:change', (e) => {
       finalEl.textContent = `$${(finalPrice / 100).toFixed(2)} USD`;
       originalEl.textContent = `$${(compareAtPrice / 100).toFixed(2)} USD`;
 
-      const isOnSale = finalPrice < compareAtPrice;
-      originalEl.style.textDecoration = isOnSale ? 'line-through' : 'none';
-      finalEl.closest('.ivy-final-price').style.display = isOnSale ? '' : 'none';
+      finalEl.closest('.ivy-final-price').style.display = finalPrice < compareAtPrice ? '' : 'none';
+      originalEl.style.textDecoration = finalPrice < compareAtPrice ? 'line-through' : 'none';
 
-      console.log("✅ Price UI updated.");
+      console.log("✅ Price DOM updated");
     } else {
       console.warn("❌ One or more price elements missing or finalPrice not available.");
     }
-  }, 200); // Give DOM time to update
+  }, 200); // Delay to wait for DOM updates
 });
-
