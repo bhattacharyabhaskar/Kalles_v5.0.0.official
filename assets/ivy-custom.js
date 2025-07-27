@@ -271,10 +271,41 @@ document.addEventListener("DOMContentLoaded", function () {
   });
 });
 
-function getLiquidCalculatedPriceCents() {
-  const match = document.body.innerHTML.match(/<!-- FINAL PRICE START -->([\s\S]*?)<!-- FINAL PRICE END -->/);
-  console.log("🥩 getLiquidCalculatedPriceCents", match);
-  return match && match[1] ? parseInt(match[1].trim(), 10) : null;
+function parseDiscountTiers(rawTiers) {
+  const tiers = [];
+  if (!rawTiers) return tiers;
+
+  rawTiers.split(',').forEach(pair => {
+    const [threshold, discountRaw] = pair.split(':').map(s => s.trim());
+    const thresholdInt = parseInt(threshold, 10);
+    if (!thresholdInt || !discountRaw) return;
+
+    if (discountRaw.includes('%')) {
+      const percent = parseFloat(discountRaw.replace('%', ''));
+      tiers.push({ threshold: thresholdInt, type: 'percent', value: percent });
+    } else {
+      const flat = parseInt(discountRaw, 10);
+      if (!isNaN(flat)) {
+        tiers.push({ threshold: thresholdInt, type: 'flat', value: flat });
+      }
+    }
+  });
+
+  // Sort from highest to lowest so best match applies
+  return tiers.sort((a, b) => b.threshold - a.threshold);
+}
+
+function getFinalPriceFromTiers(priceCents, tiers) {
+  for (const tier of tiers) {
+    if (priceCents >= tier.threshold) {
+      if (tier.type === 'percent') {
+        return Math.round(priceCents * (1 - tier.value / 100));
+      } else {
+        return priceCents - tier.value;
+      }
+    }
+  }
+  return priceCents;
 }
 
 document.addEventListener('variant:change', e => {
@@ -285,18 +316,29 @@ document.addEventListener('variant:change', e => {
     if (!variant) return;
 
     const compareAtPrice = variant.compare_at_price;
-    const finalPrice = getLiquidCalculatedPriceCents();
+    const price = variant.price;
+
+    const rawTiers = document.getElementById("ivy-discount-tiers")?.textContent?.trim().replace(/^"|"$/g, '');
+    const tiers = parseDiscountTiers(rawTiers);
+    const finalPrice = getFinalPriceFromTiers(price, tiers);
 
     const priceContainer = document.querySelector('#ivy-dynamic-price');
     const originalEl = priceContainer?.querySelector('.ivy-original-price .money');
     const finalEl = priceContainer?.querySelector('.ivy-final-price .money');
 
-    if (finalEl && originalEl && finalPrice !== null) {
+    console.log("📦 Variant:", variant);
+    console.log("🔢 Price:", price, "| Final:", finalPrice, "| Compare at:", compareAtPrice);
+    console.log("🧮 Tiers:", tiers);
+
+    if (finalEl && originalEl) {
       finalEl.textContent = `$${(finalPrice / 100).toFixed(2)} USD`;
       originalEl.textContent = `$${(compareAtPrice / 100).toFixed(2)} USD`;
 
       finalEl.closest('.ivy-final-price').style.display = finalPrice < compareAtPrice ? '' : 'none';
       originalEl.style.textDecoration = finalPrice < compareAtPrice ? 'line-through' : 'none';
+    } else {
+      console.warn("❌ Could not find .money spans inside ivy-dynamic-price");
     }
   }, 200);
 });
+
