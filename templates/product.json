@@ -194,29 +194,13 @@
             "content": "<p>We take utmost care when taking pictures of our products. But sometimes shades displayed across the different kind of fabrics and accessories may slightly vary from the actual color. This most likely could happen due to different settings in your monitor or viewing device like Laptop, Mobile OR Tablet. Also photos seen in different brands of same device like in an IPhone vs Samsung Galaxy might look different. We request you to consider these minor color variations.Video have been added to provide you a glimpse of the texture and work of the Saree. The color shown in the picture is a more accurate representation of the product.</p>",
             "page": ""
           }
-        },
-        "tab_add_HXf3yk": {
-          "type": "tab_add",
-          "settings": {
-            "title": "Additional Information"
-          }
-        },
-        "tab_html_7dKb7L": {
-          "type": "tab_html",
-          "settings": {
-            "title": "Custom tab",
-            "content": "",
-            "page": "wash-care"
-          }
         }
       },
       "block_order": [
         "tab_des_tKqkJj",
         "tab_liquid_4AQzzK",
         "tab_liquid_j6KzDY",
-        "tab_html_YxKWPk",
-        "tab_add_HXf3yk",
-        "tab_html_7dKb7L"
+        "tab_html_YxKWPk"
       ],
       "settings": {
         "tabs_design": "accordion",
