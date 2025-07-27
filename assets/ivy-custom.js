@@ -296,10 +296,7 @@ document.addEventListener('variant:change', e => {
 
     console.log("📦 Variant data:", variant);
 
-    // Try to read from comment block first
     let finalPrice = getLiquidCalculatedPriceCents();
-
-    // Fallback to DOM dataset if comment not found
     if (finalPrice === null) {
       const container = document.querySelector('#ivy-dynamic-price');
       if (container?.dataset?.finalPrice) {
@@ -312,9 +309,9 @@ document.addEventListener('variant:change', e => {
     const priceContainer = document.querySelector('#ivy-dynamic-price');
     console.log("🧩 priceContainer:", priceContainer);
 
-    // Updated selectors:
-    const originalEl = priceContainer?.querySelector('.ivy-original-price')?.querySelector('.money');
-    const finalEl = priceContainer?.querySelector('.ivy-final-price')?.querySelector('.money');
+    const allMoneySpans = priceContainer?.querySelectorAll('.hdt-money .money');
+    const originalEl = allMoneySpans?.[0];
+    const finalEl = allMoneySpans?.[1];
 
     console.log("💲 originalEl:", originalEl);
     console.log("💲 finalEl:", finalEl);
@@ -325,12 +322,12 @@ document.addEventListener('variant:change', e => {
       finalEl.textContent = `$${(finalPrice / 100).toFixed(2)} USD`;
       originalEl.textContent = `$${(compareAtPrice / 100).toFixed(2)} USD`;
 
-      finalEl.closest('.ivy-final-price').style.display = finalPrice < compareAtPrice ? '' : 'none';
+      finalEl.closest('.hdt-money').style.display = finalPrice < compareAtPrice ? '' : 'none';
       originalEl.style.textDecoration = finalPrice < compareAtPrice ? 'line-through' : 'none';
 
       console.log("✅ Price DOM updated");
     } else {
-      console.warn("❌ One or more price elements missing or finalPrice not available.");
+      console.warn("❌ One or more price elements missing or finalPrice not available");
     }
-  }, 200); // Delay to wait for DOM updates
+  }, 200);
 });
