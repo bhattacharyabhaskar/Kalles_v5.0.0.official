@@ -114,6 +114,12 @@
 
         {%- else -%}
           <div class="hdt-product-media__main">
+          {%- if product.type == 'Saree' and product.metafields.saree.fabric_type contains 'Silk Mark Certified' -%}
+            <div class="ivy-badge-logo-left">
+              <img src="https://cdn.shopify.com/s/files/1/1469/7362/files/Silk-Mark.png?v=1702234752" alt="Silk Mark Certified" width="80" height="80">
+            </div>
+          {%- endif -%}
+
             <hdt-slider id="slider-{{ block.id }}-{{ product.id }}" aria-controls="slider-thumb-{{ block.id }}-{{ product.id }}" autoheight class="hdt-slider hdt-ratio--{{ block.settings.image_ratio }}{% unless block.settings.image_size %} hdt-ratio--contain{% endunless %}" config='{ "active": true{{ start_index }}, "autoHeight": true, "slidesToScroll": 1, "watchDrag": "onlyTypeImage", "slides": ".hdt-slider__slide:not([hidden])","navUI": true{{ start_index }}, "breakpoints": { "(min-width: 1150px)": { "active": false } } }'>
               <div class="hdt-slider__viewport">
                 <div class="hdt-slider__container">
