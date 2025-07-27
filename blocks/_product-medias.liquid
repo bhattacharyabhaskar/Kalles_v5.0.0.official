@@ -114,11 +114,19 @@
 
         {%- else -%}
           <div class="hdt-product-media__main">
-          {%- if product.type == 'Saree' and product.metafields.saree.fabric_type contains 'Silk Mark Certified' -%}
+          {% if product.type == 'Saree' %}
+            <!-- DEBUG: Product type is Saree -->
+            {% assign fabric_value = product.metafields.saree.fabric_type | metafield_text %}
+            <!-- DEBUG: Fabric value = {{ fabric_value }} -->
+          {% endif %}
+          
+          {% if fabric_value contains 'Silk Mark Certified' %}
+            <!-- DEBUG: Silk Mark badge should show -->
             <div class="ivy-badge-logo-left">
               <img src="https://cdn.shopify.com/s/files/1/1469/7362/files/Silk-Mark.png?v=1702234752" alt="Silk Mark Certified" width="80" height="80">
             </div>
-          {%- endif -%}
+          {% endif %}
+
 
             <hdt-slider id="slider-{{ block.id }}-{{ product.id }}" aria-controls="slider-thumb-{{ block.id }}-{{ product.id }}" autoheight class="hdt-slider hdt-ratio--{{ block.settings.image_ratio }}{% unless block.settings.image_size %} hdt-ratio--contain{% endunless %}" config='{ "active": true{{ start_index }}, "autoHeight": true, "slidesToScroll": 1, "watchDrag": "onlyTypeImage", "slides": ".hdt-slider__slide:not([hidden])","navUI": true{{ start_index }}, "breakpoints": { "(min-width: 1150px)": { "active": false } } }'>
               <div class="hdt-slider__viewport">
