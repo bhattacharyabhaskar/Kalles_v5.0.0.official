@@ -2,19 +2,17 @@
    ✅ Silk Mark Certified Badge
    =========================== */
 
-.ivy-badge-logo-right {
+.ivy-badge-logo-left {
   position: absolute;
   top: 12px;
   right: 12px;
   z-index: 10;
-  background-color: white;
-  padding: 4px;
-  border-radius: 6px;
-  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.15);
+  width: 80px;
+  height: auto;
 }
 
-.ivy-badge-logo-right img {
-  display: block;
-  width: 64px;
+.ivy-badge-logo-left img {
+  max-width: 100%;
   height: auto;
+  display: block;
 }
