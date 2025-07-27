@@ -273,6 +273,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
 function getLiquidCalculatedPriceCents() {
   const match = document.body.innerHTML.match(/<!-- FINAL PRICE START -->([\s\S]*?)<!-- FINAL PRICE END -->/);
+  console.log("🥩 getLiquidCalculatedPriceCents", match);
   return match && match[1] ? parseInt(match[1].trim(), 10) : null;
 }
 
