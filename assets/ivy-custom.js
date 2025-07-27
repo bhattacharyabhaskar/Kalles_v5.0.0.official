@@ -272,18 +272,26 @@ document.addEventListener("DOMContentLoaded", function () {
 });
 
 function getLiquidCalculatedPriceCents() {
-  console.log("🔍 Scanning document for final price comment block...");
-  const match = document.body.innerHTML.match(/<!-- FINAL PRICE START -->([\s\S]*?)<!-- FINAL PRICE END -->/);
+  const commentMatch = document.body.innerHTML.match(/<!-- FINAL PRICE START -->([\s\S]*?)<!-- FINAL PRICE END -->/);
 
-  if (match && match[1]) {
-    const parsed = parseInt(match[1].trim(), 10);
-    console.log("✅ Found final price from Liquid:", parsed);
+  if (commentMatch && commentMatch[1]) {
+    const parsed = parseInt(commentMatch[1].trim(), 10);
+    console.log("✅ Found final price from Liquid comment:", parsed);
     return parsed;
-  } else {
-    console.warn("❌ Could not locate final price comment block in DOM.");
-    return null;
   }
+
+  // Fallback to data attribute
+  const container = document.querySelector("#ivy-dynamic-price");
+  if (container?.dataset?.finalPrice) {
+    const parsed = parseInt(container.dataset.finalPrice, 10);
+    console.log("🔁 Using data-final-price fallback:", parsed);
+    return parsed;
+  }
+
+  console.warn("❌ Could not determine final price.");
+  return null;
 }
+
 
 document.addEventListener('variant:change', (e) => {
   console.log("🟡 variant:change event triggered");
