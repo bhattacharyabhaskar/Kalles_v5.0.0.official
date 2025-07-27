@@ -329,5 +329,5 @@ document.addEventListener('variant:change', e => {
     } else {
       console.warn("❌ One or more price elements missing or finalPrice not available");
     }
-  }, 200);
+  }, 1);
 });
