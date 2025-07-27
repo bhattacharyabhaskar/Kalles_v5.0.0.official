@@ -17,6 +17,14 @@
   Usage:
   {%- render 'badges', product: product -%}
 {%- endcomment -%}
+{%- if product.type == 'Saree' -%}
+  {% assign fabric_value = product.metafields.saree.fabric_type | metafield_text %}
+{%- endif -%}
+{%- if fabric_value contains 'Silk Mark Certified' -%}
+  <div class="ivy-badge-logo-left">
+      <img src="https://cdn.shopify.com/s/files/1/1469/7362/files/Silk-Mark.png?v=1702234752" alt="Silk Mark Certified" width="80" height="80">
+  </div>
+{%- endif -%}
 
 {%- liquid
   assign has_pre_order = false
