@@ -127,7 +127,7 @@
           "type": "_product-medias",
           "static": true,
           "settings": {
-            "desktop_media_layout": "thumbnail_left",
+            "desktop_media_layout": "thumbnail_bottom",
             "media_size": "medium",
             "mobile_media_layout": "thumbnails",
             "show_first_media": false,
