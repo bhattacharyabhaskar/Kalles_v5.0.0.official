@@ -31,10 +31,9 @@
 %}
 
 {% assign fabric_value = product.metafields.custom.fabric_type.value %}
-
+AAAA>>>>{{ product.type }}
 <!-- DEBUG: Product type = {{ product.type }} -->
 <!-- DEBUG: Fabric value = {{ fabric_value }} -->
-AAA
 {% if product.type == 'Saree' and fabric_value contains 'Silk Mark Certified' %}
   <!-- ✅ DEBUG: Silk Mark badge should show -->
   <div class="ivy-badge-logo-left">
