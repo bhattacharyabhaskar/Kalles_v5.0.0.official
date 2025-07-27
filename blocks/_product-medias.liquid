@@ -30,7 +30,7 @@
   assign first_3d_model = models | first
 %}
 
-{% assign fabric_value = product.metafields.custom.fabric_type.value %}
+  {% assign fabric_value = product.metafields.saree.fabric_type | metafield_text %}
 AAAA>>>>{{ product.type }}
 BBB>>>>{{ fabric_value }}
 
