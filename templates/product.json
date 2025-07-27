@@ -194,7 +194,7 @@
         "tab_html_7dKb7L"
       ],
       "settings": {
-        "tabs_design": "tab",
+        "tabs_design": "accordion",
         "enable_first_tab": false,
         "full_width": false,
         "colors_by_section": true,
