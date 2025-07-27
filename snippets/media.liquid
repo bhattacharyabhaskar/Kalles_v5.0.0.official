@@ -58,7 +58,6 @@
 -%}
 
 {% assign fabric_value = product.metafields.saree.fabric_type | metafield_text %}
-<div class="ivy-badge-wrapper hdt-relative">
   {% if product.type == 'Saree' and fabric_value contains 'Silk Mark Certified' %}
     <div class="ivy-badge-logo-left">
       <img src="https://cdn.shopify.com/s/files/1/1469/7362/files/Silk-Mark.png?v=1702234752" alt="Silk Mark Certified" width="80" height="80">
@@ -105,6 +104,5 @@
     {%- if media.media_type == 'model' -%}
       <button type="button" class="hdt-btn hdt-w-full hdt-flex hdt-justify-center product__xr-button" aria-label="{{ 'products.product.xr_button_label' | t }}" data-shopify-xr data-shopify-model3d-id="{{ media.id }}" data-shopify-title="{{ product.title | escape }}" data-shopify-xr-hidden>{% render 'icon' with '3d-model' %}{{ 'products.product.xr_button' | t }}</button>
     {%- endif -%}
-  </div>
   </div>
 {%- endif -%}
