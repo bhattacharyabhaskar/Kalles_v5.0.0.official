@@ -271,4 +271,62 @@ document.addEventListener("DOMContentLoaded", function () {
   });
 });
 
+function getLiquidCalculatedPriceCents() {
+  console.log("🔍 Scanning document for final price comment block...");
+  const match = document.body.innerHTML.match(/<!-- FINAL PRICE START -->([\s\S]*?)<!-- FINAL PRICE END -->/);
+
+  if (match && match[1]) {
+    const parsed = parseInt(match[1].trim(), 10);
+    console.log("✅ Found final price from Liquid:", parsed);
+    return parsed;
+  } else {
+    console.warn("❌ Could not locate final price comment block in DOM.");
+    return null;
+  }
+}
+
+document.addEventListener('variant:change', (e) => {
+  console.log("🟡 variant:change event triggered");
+
+  setTimeout(() => {
+    const variant = e.detail?.variant;
+    if (!variant) {
+      console.warn("⚠️ No variant data found in event.");
+      return;
+    }
+
+    console.log("📦 Variant data:", variant);
+    const compareAtPrice = variant.compare_at_price;
+    const finalPrice = getLiquidCalculatedPriceCents();
+
+    const priceContainer = document.querySelector('#ivy-dynamic-price');
+    console.log("🧩 priceContainer:", priceContainer);
+
+    if (!priceContainer) {
+      console.warn("❌ #ivy-dynamic-price container not found.");
+      return;
+    }
+
+    const originalEl = priceContainer.querySelector('.ivy-original-price .money');
+    const finalEl = priceContainer.querySelector('.ivy-final-price .money');
+
+    console.log("💲 originalEl:", originalEl);
+    console.log("💲 finalEl:", finalEl);
+    console.log("🧮 compare_at_price:", compareAtPrice);
+    console.log("🧮 finalPrice (from Liquid):", finalPrice);
+
+    if (finalEl && originalEl && finalPrice !== null) {
+      finalEl.textContent = `$${(finalPrice / 100).toFixed(2)} USD`;
+      originalEl.textContent = `$${(compareAtPrice / 100).toFixed(2)} USD`;
+
+      const isOnSale = finalPrice < compareAtPrice;
+      originalEl.style.textDecoration = isOnSale ? 'line-through' : 'none';
+      finalEl.closest('.ivy-final-price').style.display = isOnSale ? '' : 'none';
+
+      console.log("✅ Price UI updated.");
+    } else {
+      console.warn("❌ One or more price elements missing or finalPrice not available.");
+    }
+  }, 200); // Give DOM time to update
+});
 
