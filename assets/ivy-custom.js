@@ -271,3 +271,31 @@ document.addEventListener("DOMContentLoaded", function () {
   });
 });
 
+function getLiquidCalculatedPriceCents() {
+  const match = document.body.innerHTML.match(/<!-- FINAL PRICE START -->([\s\S]*?)<!-- FINAL PRICE END -->/);
+  return match && match[1] ? parseInt(match[1].trim(), 10) : null;
+}
+
+document.addEventListener('variant:change', e => {
+  console.log("🥩 variant:change triggered");
+
+  setTimeout(() => {
+    const variant = e.detail?.variant;
+    if (!variant) return;
+
+    const compareAtPrice = variant.compare_at_price;
+    const finalPrice = getLiquidCalculatedPriceCents();
+
+    const priceContainer = document.querySelector('#ivy-dynamic-price');
+    const originalEl = priceContainer?.querySelector('.ivy-original-price .money');
+    const finalEl = priceContainer?.querySelector('.ivy-final-price .money');
+
+    if (finalEl && originalEl && finalPrice !== null) {
+      finalEl.textContent = `$${(finalPrice / 100).toFixed(2)} USD`;
+      originalEl.textContent = `$${(compareAtPrice / 100).toFixed(2)} USD`;
+
+      finalEl.closest('.ivy-final-price').style.display = finalPrice < compareAtPrice ? '' : 'none';
+      originalEl.style.textDecoration = finalPrice < compareAtPrice ? 'line-through' : 'none';
+    }
+  }, 200);
+});
