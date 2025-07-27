@@ -83,5 +83,7 @@
     -%}
    {%- endunless -%}
     <script src="{{ 'ivy-custom.js' | asset_url }}" defer></script>
+    {{ 'ivy-custom.css' | asset_url | stylesheet_tag }}
+
   </body>
 </html>
