@@ -351,6 +351,8 @@
 {{ 'theme.css' | asset_url | stylesheet_tag: preload: true }}
 {{ 'product-card.css' | asset_url | stylesheet_tag: media: 'all' }}
 {{ 'collection-products.css' | asset_url | stylesheet_tag: media: 'all' }}
+{{ 'ivy-custom.css' | asset_url | stylesheet_tag }}
+
 
 {%- # theme-check-disable AssetPreload -%}
 {% comment %} {%- unless settings.type_body_font.system? -%}
