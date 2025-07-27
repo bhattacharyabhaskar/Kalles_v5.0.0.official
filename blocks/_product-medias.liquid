@@ -29,6 +29,14 @@
   assign models = product.media | where: 'media_type', 'model'
   assign first_3d_model = models | first
 %}
+{%- if product.type == 'Saree' -%}
+  {% assign fabric_value = product.metafields.saree.fabric_type | metafield_text %}
+{%- endif -%}
+{%- if fabric_value contains 'Silk Mark Certified' -%}
+  <div class="ivy-silk-badge">
+    <img src="https://cdn.shopify.com/s/files/1/1469/7362/files/Silk-Mark.png?v=1702234752" alt="Silk Mark Certified" width="64" height="64">
+  </div>
+{%- endif -%}
 <div class="hdt-product-media-wrapps hdt-group-block hdt-s-gradient hdt-group-block--{{ block.id }}">
   {%- if product != blank -%}
     {%- capture start_index -%}
