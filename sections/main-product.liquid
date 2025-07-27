@@ -117,6 +117,9 @@
   </hdt-sticky-btn-atc>
   {%- endif -%}
 </div>
+<script type="application/json" id="ivy-discount-tiers">
+  {{ settings.general_discount_tiers | json }}
+</script>
 {% schema %}
 {
   "name": "t:sections.main-product.name",
