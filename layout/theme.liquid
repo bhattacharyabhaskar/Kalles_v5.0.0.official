@@ -25,6 +25,7 @@
     <meta name="viewport" content="width=device-width,initial-scale=1">
     <meta name="theme-color" content="">
     <link rel="canonical" href="{{ canonical_url }}">
+    {{ 'ivy-custom.css' | asset_url | stylesheet_tag }}
 
     {%- if settings.favicon != blank -%}
       <link rel="icon" type="image/png" href="{{ settings.favicon | image_url: width: 32, height: 32 }}">
@@ -83,7 +84,6 @@
     -%}
    {%- endunless -%}
     <script src="{{ 'ivy-custom.js' | asset_url }}" defer></script>
-    {{ 'ivy-custom.css' | asset_url | stylesheet_tag }}
 
   </body>
 </html>
