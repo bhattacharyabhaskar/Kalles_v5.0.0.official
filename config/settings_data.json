@@ -80,7 +80,7 @@
     "color_mode": "color",
     "color_type": "all",
     "image_source": "variant_img",
-    "color_event": "click",
+    "color_event": "hover",
     "enable_color_limit": false,
     "color_maximum": 0,
     "color_action": "all",
