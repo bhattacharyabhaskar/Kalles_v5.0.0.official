@@ -59,6 +59,8 @@
     "collection_card_radius": 0,
     "blog_card_radius": 0,
     "price_varies_style": "1",
+    "scroll_badge_sale_text": false,
+    "scroll_badge_sale_percentage": false,
     "badge_shape": "circle",
     "label_onsale_style": "percentage",
     "wishlist_mode": "1",
